@@ -1,0 +1,32 @@
+@localiza2api_HostAddress = http://localhost:5135
+
+
+
+###
+POST {{localiza2api_HostAddress}}/api/auth/login
+content-type: application/json
+
+{
+  "email": "angelgf@outlook.com",
+  "Password" : "delfines"
+}
+
+###
+POST {{localiza2api_HostAddress}}/api/auth/register
+Accept: application/json
+content-type: application/json
+
+{
+  "email": "demo@localiza2.app",
+  "password": "Demo1234",
+  "name": "Demo"
+}
+###
+POST {{localiza2api_HostAddress}}/api/contacts/invite
+authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjEiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJhbmdlbGdmQG91dGxvb2suY29tIiwiZXhwIjoxNzgxNzAwMTk4LCJpc3MiOiJsb2NhbGl6YTJhcGkiLCJhdWQiOiJsb2NhbGl6YTJhcHAifQ.DEI274DW3IV8NglLuO3UP6DAV-SN4mH7vk3s5acGY0E
+content-type: application/json
+
+{
+  "email": "angelgf+3@outlook.com",
+ "alias":"agf"
+}

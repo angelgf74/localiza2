@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>localiza2 — Confirmación de cuenta</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f172a;
+      --surface: #1e293b;
+      --border:  #334155;
+      --accent:  #3b82f6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger:  #ef4444;
+      --text:    #f1f5f9;
+      --muted:   #94a3b8;
+      --radius:  10px;
+      --shadow:  0 8px 32px rgba(0,0,0,.5);
+    }
+
+    html, body {
+      min-height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: radial-gradient(ellipse at 50% 0%, #1e3a5f 0%, var(--bg) 70%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--accent);
+      margin-bottom: 36px;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .logo svg { flex-shrink: 0; }
+
+    .icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 36px;
+    }
+    .icon.ok      { background: rgba(34,197,94,.15);  color: var(--success); }
+    .icon.error   { background: rgba(239,68,68,.15);  color: var(--danger);  }
+    .icon.expired { background: rgba(245,158,11,.15); color: var(--warning); }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .btn {
+      display: inline-block;
+      background: var(--accent);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 12px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .btn:hover { background: #2563eb; }
+    .btn.secondary {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      margin-top: 12px;
+    }
+    .btn.secondary:hover { border-color: var(--accent); color: var(--text); }
+
+    .actions { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <div class="logo">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+    </svg>
+    localiza2
+  </div>
+
+  <div id="content"></div>
+
+</div>
+
+<script>
+  const status = new URLSearchParams(location.search).get('status') ?? 'invalid';
+
+  const states = {
+    ok: {
+      iconClass: 'ok',
+      icon: '✓',
+      title: '¡Cuenta confirmada!',
+      message: 'Tu dirección de correo ha sido verificada correctamente. Ya puedes iniciar sesión en la app.',
+      actions: `<a class="btn" href="localiza2://login">Abrir la app</a>
+                <a class="btn secondary" href="https://play.google.com/store/apps/details?id=es.angelgf.localiza2&listing=localiza2" target="_blank" rel="noopener">Descargar en Google Play</a>
+                <a class="btn secondary" href="/">Ir a la web</a>`
+    },
+    expired: {
+      iconClass: 'expired',
+      icon: '⏱',
+      title: 'Enlace caducado',
+      message: 'Este enlace de confirmación ha expirado (validez 24&nbsp;h). Regístrate de nuevo para recibir un enlace nuevo.',
+      actions: `<a class="btn" href="/">Registrarme de nuevo</a>`
+    },
+    invalid: {
+      iconClass: 'error',
+      icon: '✕',
+      title: 'Enlace no válido',
+      message: 'Este enlace ya fue utilizado o no es válido. Si ya confirmaste tu cuenta, puedes iniciar sesión directamente.',
+      actions: `<a class="btn" href="/">Iniciar sesión</a>`
+    }
+  };
+
+  const s = states[status] ?? states.invalid;
+  document.getElementById('content').innerHTML = `
+    <div class="icon ${s.iconClass}">${s.icon}</div>
+    <h2>${s.title}</h2>
+    <p>${s.message}</p>
+    <div class="actions">${s.actions}</div>
+  `;
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+
+google maps:
+
+///////
+angelgfapps@outlook.com
+)(x*/fDmeD!4xnif9;:wW}{_7<X.luh-
+
+codigo 2f: WJMV7-MYHAS-5WQE2-P5ANV-7F4EE
+
+Contraseña de la aplicación
+woygdgcfllutcxow
+
+Parámetro	Valor
+---------------------------
+Servidor	smtp.office365.com	
+Puerto	587
+Cifrado	STARTTLS
+Autenticación	Requerida
+Usuario	Tu dirección de correo completa
+Contraseña	Tu contraseña (o contraseña de aplicación)
+
+
+app
+	url: https://angelgf.com.es/localiza2	
+api
+	url: https://angelgf.com.es/localiza2api
+	
+	https://angelgf.com.es/localiza2api/api/auth/confirm/scOGZs4JLkOT_IbnqCIo0g
+
+Campo       Valor
+Email       demo@localiza2.app
+Contraseña  Demo1234        

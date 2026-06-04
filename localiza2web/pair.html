@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>localiza2 — Emparejamiento</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { display:flex; align-items:center; justify-content:center; height:100%; }
+    .pair-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:36px 32px; max-width:420px; width:100%; box-shadow:var(--shadow); }
+    .pair-logo { display:flex; align-items:center; gap:8px; color:var(--accent); font-size:18px; font-weight:700; margin-bottom:28px; }
+    .pair-inviter { font-size:22px; font-weight:700; margin-bottom:6px; }
+    .pair-subtitle { color:var(--text-muted); font-size:14px; margin-bottom:28px; }
+    .pair-actions { display:flex; gap:10px; }
+    .btn-accept { flex:1; background:var(--accent); color:#fff; border:none; border-radius:var(--radius-sm); padding:11px; font-size:14px; font-weight:600; cursor:pointer; transition:background .15s; }
+    .btn-accept:hover { background:var(--accent-dark); }
+    .btn-accept:disabled { opacity:.6; cursor:not-allowed; }
+    .btn-decline { flex:1; background:transparent; color:var(--text-muted); border:1px solid var(--border); border-radius:var(--radius-sm); padding:11px; font-size:14px; cursor:pointer; transition:color .15s, border-color .15s; }
+    .btn-decline:hover { color:var(--danger); border-color:var(--danger); }
+    .status-msg { margin-top:20px; padding:12px; border-radius:var(--radius-sm); font-size:13px; text-align:center; }
+    .status-msg.ok    { background:#14532d; color:#86efac; }
+    .status-msg.err   { background:#450a0a; color:#fca5a5; }
+    .status-msg.info  { background:var(--surface-2); color:var(--text-muted); }
+    .spinner { display:inline-block; animation:spin .7s linear infinite; }
+    .divider { border:none; border-top:1px solid var(--border); margin:24px 0; }
+    .auth-links { margin-top:20px; text-align:center; font-size:12px; color:var(--text-muted); line-height:2; }
+    .auth-link { color:var(--text-muted); text-decoration:none; }
+    .auth-link:hover { color:var(--accent); }
+    .auth-link.active { color:var(--text); font-weight:600; cursor:default; }
+    .btn-accept { width:100%; background:var(--accent); color:#fff; border:none; border-radius:var(--radius-sm); padding:11px; font-size:14px; font-weight:600; cursor:pointer; transition:background .15s; margin-top:4px; }
+  </style>
+</head>
+<body>
+  <div class="pair-card" id="card">
+    <div class="pair-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+      </svg>
+      localiza2
+    </div>
+    <div id="loading" class="status-msg info"><span class="spinner">⟳</span> Cargando…</div>
+    <div id="content" class="hidden"></div>
+  </div>
+
+  <script src="pair.js?v=20260526"></script>
+</body>
+</html>

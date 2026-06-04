@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_help"
+        android:title="Ayuda"
+        android:icon="@android:drawable/ic_menu_help"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_suggestions"
+        android:title="Enviar sugerencia"
+        android:icon="@android:drawable/ic_menu_send"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_delete_account"
+        android:title="Eliminar cuenta"
+        android:icon="@android:drawable/ic_menu_delete"
+        app:showAsAction="never" />
+
+</menu>

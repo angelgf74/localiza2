@@ -1,0 +1,20 @@
+# Build output
+.gradle/
+build/
+app/build/
+**/build/
+
+# Android Studio
+.idea/
+*.iml
+local.properties
+
+# Keystore — NUNCA subir al repositorio
+keystore/
+keystore.properties
+*.jks
+*.keystore
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db

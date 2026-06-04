@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>localiza2 — Comparte tu ubicación con quienes importan</title>
+  <meta name="description" content="Sigue la posición de tus contactos en tiempo real. Disponible como app Android y como aplicación web." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f172a;
+      --surface:   #1e293b;
+      --surface-2: #334155;
+      --accent:    #3b82f6;
+      --accent-dk: #2563eb;
+      --success:   #22c55e;
+      --text:      #f1f5f9;
+      --muted:     #94a3b8;
+      --border:    #334155;
+      --r:         12px;
+      --r-sm:      8px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Navbar ──────────────────────────────────────────────────────────── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(15,23,42,.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      height: 58px;
+      padding: 0 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 9px;
+      color: var(--accent); font-size: 18px; font-weight: 700;
+      text-decoration: none;
+    }
+    .nav-links {
+      display: flex; align-items: center; gap: 28px;
+    }
+    .nav-links a {
+      color: var(--muted); font-size: 14px; text-decoration: none;
+      transition: color .15s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--accent); color: #fff;
+      padding: 8px 20px; border-radius: var(--r-sm);
+      font-size: 14px; font-weight: 600; text-decoration: none;
+      transition: background .15s, transform .15s;
+    }
+    .nav-cta:hover { background: var(--accent-dk); transform: translateY(-1px); }
+
+    /* ── Hero ────────────────────────────────────────────────────────────── */
+    .hero {
+      min-height: calc(100vh - 58px);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 80px 24px 64px;
+      background:
+        radial-gradient(ellipse at 50% -5%, #1a3a6e 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 70%,  rgba(59,130,246,.07) 0%, transparent 55%),
+        var(--bg);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(59,130,246,.12);
+      border: 1px solid rgba(59,130,246,.3);
+      color: var(--accent);
+      border-radius: 999px; padding: 5px 16px;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+    .hero h1 {
+      font-size: clamp(38px, 7vw, 76px);
+      font-weight: 800; line-height: 1.08;
+      letter-spacing: -.03em;
+      margin-bottom: 22px; max-width: 780px;
+    }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .hero-sub {
+      font-size: clamp(16px, 2.2vw, 20px);
+      color: var(--muted); max-width: 540px;
+      margin-bottom: 44px; line-height: 1.7;
+    }
+
+    /* CTA buttons */
+    .hero-actions {
+      display: flex; gap: 14px; flex-wrap: wrap; justify-content: center;
+      margin-bottom: 72px;
+    }
+    .btn-gplay {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: #fff; color: #111;
+      padding: 11px 22px; border-radius: var(--r-sm);
+      text-decoration: none;
+      transition: background .15s, transform .15s;
+    }
+    .btn-gplay:hover { background: #e2e8f0; transform: translateY(-1px); }
+    .btn-gplay-label { display: flex; flex-direction: column; line-height: 1.25; }
+    .btn-gplay-sub  { font-size: 10px; font-weight: 400; opacity: .65; }
+    .btn-gplay-main { font-size: 15px; font-weight: 700; }
+
+    .btn-web {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent;
+      border: 1px solid var(--border); color: var(--muted);
+      padding: 11px 22px; border-radius: var(--r-sm);
+      font-size: 14px; font-weight: 600; text-decoration: none;
+      transition: border-color .15s, color .15s, transform .15s;
+    }
+    .btn-web:hover { border-color: var(--accent); color: var(--text); transform: translateY(-1px); }
+
+    /* ── Map illustration ────────────────────────────────────────────────── */
+    .map-wrap {
+      width: 100%; max-width: 700px;
+      border-radius: 18px; overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 32px 80px rgba(0,0,0,.65);
+      position: relative;
+    }
+    .map-canvas {
+      width: 100%; height: 340px;
+      background: #0d1b2a;
+      position: relative; overflow: hidden;
+    }
+    /* Grid */
+    .map-canvas::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(59,130,246,.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,.055) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+    /* Roads */
+    .road {
+      position: absolute;
+      background: rgba(59,130,246,.1);
+      border-radius: 3px;
+    }
+    .road.h { height: 14px; }
+    .road.v { width: 14px; }
+    .road.d {
+      height: 14px;
+      transform-origin: left center;
+    }
+    /* Area block (park/block) */
+    .area {
+      position: absolute;
+      border-radius: 6px;
+    }
+
+    /* Pin */
+    .pin {
+      position: absolute;
+      display: flex; flex-direction: column; align-items: center;
+      transform: translateX(-50%);
+    }
+    .pin-head {
+      width: 32px; height: 32px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,.4);
+      position: relative; z-index: 2;
+    }
+    .pin-head svg { transform: rotate(45deg); flex-shrink: 0; }
+    .pin-label {
+      margin-top: 5px;
+      background: var(--surface-2, #334155);
+      border: 1px solid var(--border);
+      border-radius: 5px; padding: 3px 9px;
+      font-size: 11px; color: var(--text); white-space: nowrap;
+      position: relative; z-index: 2;
+    }
+
+    /* Pulse ring */
+    .pin-ring {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 2px solid;
+      animation: ring 2.4s ease-out infinite;
+      z-index: 1;
+    }
+    .pin-ring:nth-child(2) { animation-delay: .8s; }
+    @keyframes ring {
+      0%   { transform: translate(-50%,-50%) scale(.5); opacity: .8; }
+      100% { transform: translate(-50%,-50%) scale(2.8); opacity: 0; }
+    }
+
+    /* Route line */
+    .route {
+      position: absolute;
+      border-top: 2px dashed;
+      transform-origin: left center;
+    }
+
+    /* Map bar */
+    .map-bar {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 10px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 12px; color: var(--muted);
+    }
+    .map-bar-live {
+      display: flex; align-items: center; gap: 6px;
+      color: var(--success);
+    }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--success);
+      animation: blink 1.6s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .3; }
+    }
+
+    /* ── Section base ────────────────────────────────────────────────────── */
+    section { padding: 100px 24px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-tag {
+      font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .08em;
+      color: var(--accent); margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800; line-height: 1.12;
+      letter-spacing: -.02em; margin-bottom: 16px;
+    }
+    .section-sub {
+      font-size: 16px; color: var(--muted);
+      max-width: 500px; line-height: 1.7;
+    }
+
+    /* ── Features ────────────────────────────────────────────────────────── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px; margin-top: 56px;
+    }
+    .feat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 28px 24px;
+      transition: border-color .2s, transform .2s;
+    }
+    .feat-card:hover { border-color: rgba(59,130,246,.5); transform: translateY(-3px); }
+    .feat-icon {
+      width: 44px; height: 44px;
+      background: rgba(59,130,246,.12);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent); margin-bottom: 18px;
+    }
+    .feat-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+    .feat-card p  { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+    /* ── How it works ────────────────────────────────────────────────────── */
+    #como-funciona { background: var(--surface); }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 40px; margin-top: 56px;
+    }
+    .step { display: flex; gap: 18px; align-items: flex-start; }
+    .step-num {
+      flex-shrink: 0;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      font-size: 16px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step-body h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .step-body p  { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+    /* ── Platforms ───────────────────────────────────────────────────────── */
+    .platforms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px; margin-top: 56px;
+    }
+    .plat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 40px 36px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .plat-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      background: rgba(59,130,246,.12);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent);
+    }
+    .plat-card h3 { font-size: 22px; font-weight: 800; }
+    .plat-card > p { font-size: 14px; color: var(--muted); line-height: 1.7; flex: 1; }
+    .plat-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+    .plat-meta-item { font-size: 12px; color: var(--muted); }
+    .plat-meta-item strong { color: var(--text); display: block; font-size: 13px; }
+    .plat-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+
+    /* ── Footer ──────────────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 32px;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center;
+      justify-content: space-between; flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo {
+      display: flex; align-items: center; gap: 8px;
+      color: var(--accent); font-size: 16px; font-weight: 700;
+      text-decoration: none;
+    }
+    .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+    .footer-links a {
+      font-size: 13px; color: var(--muted); text-decoration: none;
+      transition: color .15s;
+    }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy {
+      max-width: 1100px; margin: 24px auto 0;
+      padding-top: 24px; border-top: 1px solid var(--border);
+      font-size: 12px; color: var(--muted); text-align: center;
+    }
+
+    /* ── Responsive ──────────────────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      section { padding: 72px 20px; }
+      .plat-card { padding: 28px 24px; }
+      .map-canvas { height: 260px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Navbar ──────────────────────────────────────────────────────────── -->
+  <nav class="nav">
+    <a href="landing.html" class="nav-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+      </svg>
+      localiza2
+    </a>
+    <div class="nav-links">
+      <a href="#caracteristicas">Características</a>
+      <a href="#como-funciona">Cómo funciona</a>
+      <a href="#plataformas">Plataformas</a>
+      <a href="privacy.html">Privacidad</a>
+    </div>
+    <a href="index.html" class="nav-cta">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="15" height="15">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+      </svg>
+      Abrir app
+    </a>
+  </nav>
+
+  <!-- ── Hero ────────────────────────────────────────────────────────────── -->
+  <section class="hero">
+
+    <div class="hero-badge">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="11" height="11">
+        <circle cx="12" cy="12" r="10"/>
+      </svg>
+      Localización en tiempo real
+    </div>
+
+    <h1>Comparte tu ubicación<br/>con <em>quienes importan</em></h1>
+
+    <p class="hero-sub">
+      Sigue en el mapa la posición de tus contactos, revisa su historial de recorrido
+      y mantén siempre la ubicación actualizada, desde Android o desde el navegador.
+    </p>
+
+    <div class="hero-actions">
+      <!-- Google Play badge -->
+      <a href="https://play.google.com/store/apps/details?id=es.angelgf.localiza2"
+         target="_blank" rel="noopener" class="btn-gplay">
+        <!-- Google Play icon (triángulo) -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="26" height="26">
+          <path fill="#4285F4" d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1z"/>
+          <path fill="#34A853" d="M47.9 0C38 3.7 32 13.5 32 26.9v458.3c0 13.4 6 23.1 15.9 26.8l2.2.8 256.9-257v-6L47.9 0z"/>
+          <path fill="#FBBC05" d="M425.2 262.1l-79.9-46-67.4 64.7 67.4 64.7 79.9-46c22.8-13.1 22.8-34.5 0-47.4z"/>
+          <path fill="#EA4335" d="M47.9 512c9.9 3.7 22.8 1.3 35.5-5.8L337 338.5l-67.4-64.7L47.9 512z"/>
+        </svg>
+        <span class="btn-gplay-label">
+          <span class="btn-gplay-sub">Disponible en</span>
+          <span class="btn-gplay-main">Google Play</span>
+        </span>
+      </a>
+
+      <!-- Web app -->
+      <a href="index.html" class="btn-web">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+        </svg>
+        Abrir web app
+      </a>
+    </div>
+
+    <!-- Map illustration -->
+    <div class="map-wrap">
+      <div class="map-canvas">
+
+        <!-- Roads horizontal -->
+        <div class="road h" style="top:38%; left:0; width:100%;"></div>
+        <div class="road h" style="top:68%; left:0; width:100%; height:10px;"></div>
+        <!-- Roads vertical -->
+        <div class="road v" style="left:28%; top:0; height:100%;"></div>
+        <div class="road v" style="left:65%; top:0; height:100%; width:10px;"></div>
+        <!-- Diagonal -->
+        <div class="road d" style="top:14%; left:28%; width:42%; transform: rotate(32deg);"></div>
+
+        <!-- Area blocks -->
+        <div class="area" style="top:8%;left:32%;width:30%;height:22%;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.12);"></div>
+        <div class="area" style="top:44%;left:68%;width:26%;height:18%;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.1);"></div>
+        <div class="area" style="top:72%;left:4%;width:20%;height:20%;background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.09);"></div>
+
+        <!-- Pin 1 — blue (you) with pulse -->
+        <div class="pin" style="top:28%;left:52%;">
+          <div style="position:relative; width:32px; height:32px;">
+            <div class="pin-ring" style="border-color:var(--accent);"></div>
+            <div class="pin-ring" style="border-color:var(--accent);animation-delay:.9s;"></div>
+            <div class="pin-head" style="background:var(--accent); position:absolute; inset:0;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff" width="14" height="14">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="pin-label" style="border-color:rgba(59,130,246,.4);">Tú · ahora</div>
+        </div>
+
+        <!-- Pin 2 — green (contact 1) -->
+        <div class="pin" style="top:54%;left:35%;">
+          <div class="pin-head" style="background:#16a34a;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff" width="14" height="14">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          </div>
+          <div class="pin-label">Ana · 3 min</div>
+        </div>
+
+        <!-- Pin 3 — amber (contact 2) -->
+        <div class="pin" style="top:18%;left:72%;">
+          <div class="pin-head" style="background:#b45309;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#fff" width="14" height="14">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          </div>
+          <div class="pin-label">Carlos · 12 min</div>
+        </div>
+
+      </div>
+      <div class="map-bar">
+        <span>3 contactos visibles</span>
+        <span class="map-bar-live">
+          <span class="live-dot"></span>
+          En tiempo real
+        </span>
+        <span>Actualiza cada 60 s</span>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── Características ─────────────────────────────────────────────────── -->
+  <section id="caracteristicas">
+    <div class="container">
+      <p class="section-tag">Características</p>
+      <h2 class="section-title">Todo lo que necesitas<br/>para mantenerte conectado</h2>
+      <p class="section-sub">Una herramienta sencilla y privada para compartir ubicación con las personas de confianza.</p>
+
+      <div class="features-grid">
+
+        <div class="feat-card">
+          <div class="feat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+          </div>
+          <h3>Tiempo real</h3>
+          <p>La posición se actualiza automáticamente cada 60 segundos y el mapa refleja los cambios al instante.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+              <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/>
+            </svg>
+          </div>
+          <h3>Mapa interactivo</h3>
+          <p>Visualiza a todos tus contactos sobre un mapa. Haz clic en cualquiera para ver su historial de recorrido.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+              <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
+            </svg>
+          </div>
+          <h3>Historial 30 días</h3>
+          <p>Consulta el recorrido de las últimas horas o de los últimos días con retención automática y escalonada.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+              <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+            </svg>
+          </div>
+          <h3>Solo tus contactos</h3>
+          <p>Compartes tu ubicación únicamente con personas que tú hayas aprobado. Nadie más puede verte.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+              <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/>
+            </svg>
+          </div>
+          <h3>Emparejamiento fácil</h3>
+          <p>Conecta con un contacto mostrándole un código QR o enviando una invitación directamente a su email.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+              <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+            </svg>
+          </div>
+          <h3>Siempre activo</h3>
+          <p>El servicio de fondo de la app Android envía tu posición aunque cierres la pantalla, con bajo consumo de batería.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Cómo funciona ────────────────────────────────────────────────────── -->
+  <section id="como-funciona">
+    <div class="container">
+      <p class="section-tag">Cómo funciona</p>
+      <h2 class="section-title">En marcha en tres pasos</h2>
+      <p class="section-sub">Sin configuraciones complicadas. En pocos minutos puedes ver dónde están tus contactos.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <h3>Crea tu cuenta</h3>
+            <p>Regístrate con tu dirección de email. Recibirás un enlace de confirmación para activar la cuenta de forma segura.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <h3>Conecta contactos</h3>
+            <p>Genera un código QR para que tu contacto lo escanee, o envíale una invitación directamente a su correo.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <h3>Sigue el mapa</h3>
+            <p>Ambos apareceréis en el mapa en tiempo real. Consulta el historial de recorrido cuando quieras.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Plataformas ──────────────────────────────────────────────────────── -->
+  <section id="plataformas">
+    <div class="container">
+      <p class="section-tag">Plataformas</p>
+      <h2 class="section-title">Disponible donde tú estés</h2>
+      <p class="section-sub">Elige la versión que mejor se adapta a ti. La cuenta es la misma en ambas.</p>
+
+      <div class="platforms-grid">
+
+        <!-- Android -->
+        <div class="plat-card">
+          <div class="plat-icon">
+            <!-- Android robot icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+              <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v7c0 .83.67 1.5 1.5 1.5S5 17.33 5 16.5v-7C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zm-4.97-5.84l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48C14.15 1.23 13.1 1 12 1c-1.1 0-2.15.23-3.12.63L7.4.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C6.05 3.35 5 5.55 5 8h14c0-2.45-1.05-4.65-2.97-5.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/>
+            </svg>
+          </div>
+          <h3>App Android</h3>
+          <p>
+            Aplicación nativa con servicio de ubicación en segundo plano. Funciona aunque la pantalla esté apagada y
+            muestra a tus contactos sobre un mapa con historial de ruta.
+          </p>
+          <div class="plat-meta">
+            <div class="plat-meta-item"><strong>Versión 1.3</strong>Android 8.0+</div>
+            <div class="plat-meta-item"><strong>Gratis</strong>Sin anuncios</div>
+          </div>
+          <div class="plat-actions">
+            <a href="https://play.google.com/store/apps/details?id=es.angelgf.localiza2&listing=localiza2"
+               target="_blank" rel="noopener" class="btn-gplay" style="padding:9px 18px;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="22" height="22">
+                <path fill="#4285F4" d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1z"/>
+                <path fill="#34A853" d="M47.9 0C38 3.7 32 13.5 32 26.9v458.3c0 13.4 6 23.1 15.9 26.8l2.2.8 256.9-257v-6L47.9 0z"/>
+                <path fill="#FBBC05" d="M425.2 262.1l-79.9-46-67.4 64.7 67.4 64.7 79.9-46c22.8-13.1 22.8-34.5 0-47.4z"/>
+                <path fill="#EA4335" d="M47.9 512c9.9 3.7 22.8 1.3 35.5-5.8L337 338.5l-67.4-64.7L47.9 512z"/>
+              </svg>
+              <span class="btn-gplay-label">
+                <span class="btn-gplay-sub">Descargar en</span>
+                <span class="btn-gplay-main">Google Play</span>
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Web -->
+        <div class="plat-card">
+          <div class="plat-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+            </svg>
+          </div>
+          <h3>App Web</h3>
+          <p>
+            Accede desde cualquier navegador, en el ordenador o en el móvil, sin instalar nada. Inicia sesión con la
+            misma cuenta que en Android y visualiza el mapa al instante.
+          </p>
+          <div class="plat-meta">
+            <div class="plat-meta-item"><strong>Sin instalación</strong>Cualquier navegador</div>
+            <div class="plat-meta-item"><strong>Gratis</strong>Sin registro adicional</div>
+          </div>
+          <div class="plat-actions">
+            <a href="index.html" class="nav-cta" style="padding:10px 22px; font-size:14px;">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+              </svg>
+              Abrir web app
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ──────────────────────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-inner">
+      <a href="landing.html" class="footer-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+        </svg>
+        localiza2
+      </a>
+      <div class="footer-links">
+        <a href="index.html">App web</a>
+        <a href="https://play.google.com/store/apps/details?id=es.angelgf.localiza2&listing=localiza2" target="_blank" rel="noopener">Google Play</a>
+        <a href="privacy.html">Privacidad</a>
+      </div>
+    </div>
+    <p class="footer-copy">© 2025 localiza2 · Compartición de ubicación entre contactos</p>
+  </footer>
+<script>
+(function () {
+  const SITE_ID = 'fe717a73-5319-4ac1-8ae7-7dbbfa23f48c';
+  const API    = 'https://angelgf.com.es/webanalyticsapi/api/visits';
+  const KEY    = 'wa_visitor_id';
+  fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      siteId:           SITE_ID,
+      visitorId:        localStorage.getItem(KEY),
+      page:             window.location.href,
+      referrer:         document.referrer || null,
+      userAgent:        navigator.userAgent,
+      language:         navigator.language,
+      screenResolution: `${screen.width}x${screen.height}`
+    })
+  })
+  .then(r => r.json())
+  .then(data => localStorage.setItem(KEY, data.visitorId))
+  .catch(() => {});
+})();
+</script>
+</body>
+</html>

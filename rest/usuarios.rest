@@ -1,0 +1,5 @@
+@host = 
+POST /localiza2api/api/auth/forgot-password
+{
+    "email": "demo@localiza2.app"
+}

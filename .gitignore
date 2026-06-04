@@ -1,0 +1,33 @@
+﻿# ─── .NET API ───────────────────────────────────────────────────────────────
+localiza2api/bin/
+localiza2api/obj/
+localiza2api/publish/
+localiza2api/*.user
+.vs/
+
+# Secretos: contienen credenciales reales de BD y JWT
+localiza2api/appsettings.json
+localiza2api/appsettings.Development.json
+
+# ─── Android ────────────────────────────────────────────────────────────────
+localiza2/.gradle/
+localiza2/build/
+localiza2/**/build/
+localiza2/.idea/
+localiza2/**/*.iml
+localiza2/local.properties
+
+# Keystore y firma — NUNCA subir
+localiza2/keystore/
+localiza2/keystore.properties
+localiza2/playstore/
+**/*.jks
+**/*.keystore
+
+# ─── Deploy / artefactos compilados ────────────────────────────────────────
+deploy/
+
+# ─── Sistema operativo ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

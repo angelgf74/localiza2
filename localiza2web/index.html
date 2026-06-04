@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>localiza2</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Pantalla de login ─────────────────────────────────────────────── -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+        </svg>
+        <h1>localiza2</h1>
+      </div>
+
+      <!-- Panel: login -->
+      <div id="panel-login">
+        <form id="login-form" novalidate>
+          <div class="field">
+            <label for="login-email">Email</label>
+            <input type="email" id="login-email" placeholder="usuario@ejemplo.com"
+                   autocomplete="email" required />
+          </div>
+          <div class="field">
+            <label for="login-password">Contraseña</label>
+            <input type="password" id="login-password" placeholder="••••••••"
+                   autocomplete="current-password" required />
+          </div>
+          <button type="submit" id="login-btn" class="btn-primary">
+            <span class="btn-text">Entrar</span>
+            <span class="btn-spinner hidden">⟳</span>
+          </button>
+          <p id="login-error" class="error-msg hidden"></p>
+        </form>
+        <div class="auth-switch">
+          <a href="#" id="go-register">Crear cuenta</a>
+          <span>·</span>
+          <a href="#" id="go-forgot">¿Olvidaste la contraseña?</a>
+        </div>
+      </div>
+
+      <!-- Panel: registro -->
+      <div id="panel-register" class="hidden">
+        <form id="register-form" novalidate>
+          <div class="field">
+            <label for="reg-name">Nombre</label>
+            <input type="text" id="reg-name" placeholder="Tu nombre" autocomplete="name" required />
+          </div>
+          <div class="field">
+            <label for="reg-email">Email</label>
+            <input type="email" id="reg-email" placeholder="usuario@ejemplo.com" autocomplete="email" required />
+          </div>
+          <div class="field">
+            <label for="reg-password">Contraseña (mín. 8 caracteres)</label>
+            <input type="password" id="reg-password" placeholder="••••••••"
+                   autocomplete="new-password" minlength="8" required />
+          </div>
+          <button type="submit" id="register-btn" class="btn-primary">
+            <span class="btn-text">Crear cuenta</span>
+            <span class="btn-spinner hidden">⟳</span>
+          </button>
+          <p id="register-msg" class="error-msg hidden"></p>
+        </form>
+        <div class="auth-switch">
+          <a href="#" id="go-login-from-reg">¿Ya tienes cuenta? Inicia sesión</a>
+        </div>
+      </div>
+
+      <!-- Panel: recuperar contraseña -->
+      <div id="panel-forgot" class="hidden">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">
+          Introduce tu email y te enviaremos un enlace para restablecer tu contraseña.
+        </p>
+        <form id="forgot-form" novalidate>
+          <div class="field">
+            <label for="forgot-email">Email</label>
+            <input type="email" id="forgot-email" placeholder="usuario@ejemplo.com" autocomplete="email" required />
+          </div>
+          <button type="submit" id="forgot-btn" class="btn-primary">
+            <span class="btn-text">Enviar enlace</span>
+            <span class="btn-spinner hidden">⟳</span>
+          </button>
+          <p id="forgot-msg" class="error-msg hidden"></p>
+        </form>
+        <div class="auth-switch">
+          <a href="#" id="go-login-from-forgot">Volver a iniciar sesión</a>
+        </div>
+      </div>
+
+      <div class="store-links">
+        <a href="https://play.google.com/store/apps/details?id=es.angelgf.localiza2&amp;listing=localiza2"
+           target="_blank" rel="noopener" class="store-badge">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+            <path d="M3 20.5v-17c0-.83.94-1.3 1.6-.8l14 8.5c.6.36.6 1.24 0 1.6l-14 8.5c-.66.5-1.6.03-1.6-.8z"/>
+          </svg>
+          Disponible en Google Play
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Pantalla principal ────────────────────────────────────────────── -->
+  <div id="app-screen" class="hidden">
+
+    <nav class="navbar">
+      <span class="nav-brand">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+        </svg>
+        localiza2
+      </span>
+
+      <div class="nav-center">
+        <span id="nav-username"></span>
+        <span id="geo-status" class="geo-badge" title="Estado de geolocalización"></span>
+      </div>
+
+      <div class="nav-actions">
+        <button id="refresh-btn" class="icon-btn" title="Actualizar contactos">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+        </button>
+        <button id="locate-btn" class="icon-btn" title="Centrar en mi posición">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+          </svg>
+        </button>
+        <button id="logout-btn" class="btn-outline">Salir</button>
+      </div>
+    </nav>
+
+    <div class="layout">
+
+      <!-- Sidebar de contactos -->
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <span>Contactos</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span id="contact-count" class="badge">0</span>
+            <button id="pair-btn" class="icon-btn" title="Emparejar contacto" style="padding:3px 5px;font-size:16px;line-height:1">+</button>
+          </div>
+        </div>
+        <div id="refresh-indicator" class="refresh-indicator hidden">
+          <span class="spinner-small">⟳</span> Actualizando…
+        </div>
+        <ul id="contact-list" class="contact-list">
+          <li class="contact-empty">Cargando contactos…</li>
+        </ul>
+        <div class="sidebar-footer">
+          Actualización automática cada 30 s
+        </div>
+      </aside>
+
+      <!-- Mapa -->
+      <div id="map"></div>
+
+    </div>
+  </div>
+
+  <!-- ── Toast de notificaciones ───────────────────────────────────────── -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- ── Modal de emparejamiento ──────────────────────────────────────────── -->
+  <div id="pair-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="modal-title">Emparejar contacto</span>
+        <button id="pair-modal-close" class="icon-btn" title="Cerrar">✕</button>
+      </div>
+
+      <div class="modal-tabs">
+        <button class="tab-btn active" data-tab="qr">Código QR</button>
+        <button class="tab-btn" data-tab="email">Por email</button>
+      </div>
+
+      <!-- QR tab -->
+      <div id="tab-qr" class="tab-content">
+        <p class="modal-hint">Muestra este código a tu contacto para que lo escanee con la cámara.</p>
+        <div id="qr-container" class="qr-box">
+          <span class="text-muted" style="font-size:13px">Generando…</span>
+        </div>
+        <p id="qr-expiry" class="modal-hint" style="margin-top:8px"></p>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button id="qr-refresh-btn" class="btn-outline" style="flex:1">Renovar código</button>
+        </div>
+      </div>
+
+      <!-- Email tab -->
+      <div id="tab-email" class="tab-content hidden">
+        <p class="modal-hint">Envía una invitación por correo electrónico.</p>
+        <form id="invite-form">
+          <div class="field">
+            <label>Email del contacto</label>
+            <input type="email" id="invite-email" placeholder="contacto@ejemplo.com" required />
+          </div>
+          <div class="field">
+            <label>Alias (cómo le llamarás)</label>
+            <input type="text" id="invite-alias" placeholder="Nombre, apodo…" required />
+          </div>
+          <button type="submit" id="invite-btn" class="btn-primary" style="margin-top:4px">
+            <span class="btn-text">Enviar invitación</span>
+            <span class="btn-spinner hidden">⟳</span>
+          </button>
+        </form>
+        <div id="invite-result" class="hidden" style="margin-top:12px"></div>
+      </div>
+
+      <!-- TODO (Option C): Push notification pairing requires FCM setup -->
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
