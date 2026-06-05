@@ -1,33 +1,44 @@
-﻿# ─── .NET API ───────────────────────────────────────────────────────────────
+# ─── .NET API ─────────────────────────────────────────────────────────────────
 localiza2api/bin/
 localiza2api/obj/
 localiza2api/publish/
-localiza2api/*.user
-.vs/
+**/.vs/
+**/*.user
+localiza2api/Properties/launchSettings.json
 
-# Secretos: contienen credenciales reales de BD y JWT
+# Secretos — credenciales de BD, JWT y email
 localiza2api/appsettings.json
 localiza2api/appsettings.Development.json
 
-# ─── Android ────────────────────────────────────────────────────────────────
+# ─── Android ──────────────────────────────────────────────────────────────────
+localiza2/local.properties
 localiza2/.gradle/
-localiza2/build/
 localiza2/**/build/
 localiza2/.idea/
 localiza2/**/*.iml
-localiza2/local.properties
 
-# Keystore y firma — NUNCA subir
+# Firma y distribución — NUNCA subir
 localiza2/keystore/
 localiza2/keystore.properties
 localiza2/playstore/
 **/*.jks
 **/*.keystore
 
-# ─── Deploy / artefactos compilados ────────────────────────────────────────
+# ─── Deploy / artefactos compilados ───────────────────────────────────────────
 deploy/
 
-# ─── Sistema operativo ──────────────────────────────────────────────────────
+# ─── Archivos de prueba local ─────────────────────────────────────────────────
+*.http
+*.rest
+
+# ─── Datos sensibles del proyecto ─────────────────────────────────────────────
+info.txt
+localiza2_demo.mp4
+_deploy.sh
+
+# ─── Sistema operativo y editores ─────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 desktop.ini
+*.log
+*.tmp

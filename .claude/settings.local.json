@@ -50,7 +50,8 @@
       "Bash(adb uninstall *)",
       "Bash(adb -s c15a1ea5 shell pm list packages)",
       "Bash(adb *)",
-      "Bash(where psql *)"
+      "Bash(where psql *)",
+      "PowerShell(Get-ChildItem \"c:\\\\Desarrollo\\\\Proyectos\\\\localiza2\" -Force | ForEach-Object { \"$\\($_.Attributes\\)`t$\\($_.Name\\)\" })"
     ]
   }
 }

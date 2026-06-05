@@ -4,7 +4,49 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!-- Pin body (white teardrop) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,20C40.75,20 30,30.75 30,44c0,19.25 24,44 24,44s24,-24.75 24,-44C78,30.75 67.25,20 54,20zM54,52.5c-4.69,0 -8.5,-3.81 -8.5,-8.5s3.81,-8.5 8.5,-8.5 8.5,3.81 8.5,8.5 -3.81,8.5 -8.5,8.5z" />
+        android:pathData="M54,78 C48,72 34,62 34,38 A20,20 0,1,1 74,38 C74,62 60,72 54,78 Z"/>
+
+    <!-- Inner circle (amber accent) -->
+    <path
+        android:fillColor="#FFB300"
+        android:pathData="M54,38 m-11,0 a11,11 0,1,0 22,0 a11,11 0,1,0 -22,0"/>
+
+    <!-- Inner white dot -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,38 m-5,0 a5,5 0,1,0 10,0 a5,5 0,1,0 -10,0"/>
+
+    <!-- Dot at pin tip -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,78 m-2.5,0 a2.5,2.5 0,1,0 5,0 a2.5,2.5 0,1,0 -5,0"/>
+
+    <!-- Signal arc 1 (inner, 80% opacity) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#CCFFFFFF"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:pathData="M49,82 A5,5 0,0,1 59,82"/>
+
+    <!-- Signal arc 2 (medium, 60% opacity) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#99FFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:pathData="M45,82 A9,9 0,0,1 63,82"/>
+
+    <!-- Signal arc 3 (outer, 33% opacity) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#55FFFFFF"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M41,82 A13,13 0,0,1 67,82"/>
+
 </vector>
