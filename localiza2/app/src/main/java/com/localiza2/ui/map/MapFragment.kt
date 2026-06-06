@@ -9,6 +9,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -17,7 +18,9 @@ import com.localiza2.R
 import com.localiza2.api.RetrofitClient
 import com.localiza2.databinding.FragmentMapBinding
 import com.localiza2.models.ContactLocationDto
+import com.localiza2.models.LocationHistoryPointDto
 import com.localiza2.utils.SessionManager
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -25,6 +28,8 @@ import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Overlay
+import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.time.Duration
@@ -36,7 +41,9 @@ class MapFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var map: MapView
     private lateinit var viewModel: MapViewModel
+    private val sharedViewModel: MapSharedViewModel by activityViewModels()
     private val markers = mutableMapOf<Int, Marker>()
+    private val historyOverlays = mutableListOf<Overlay>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         Configuration.getInstance().load(
@@ -66,6 +73,11 @@ class MapFragment : Fragment() {
 
         binding.chipAll.setOnClickListener { viewModel.loadAllLocations() }
 
+        binding.btnCloseHistory.setOnClickListener {
+            viewModel.clearHistory()
+            viewModel.loadAllLocations()
+        }
+
         lifecycleScope.launch {
             viewModel.locations.collect { locations -> updateMap(locations) }
         }
@@ -83,8 +95,127 @@ class MapFragment : Fragment() {
                 }
             }
         }
+        lifecycleScope.launch {
+            combine(viewModel.historyAlias, viewModel.historyPoints) { alias, points ->
+                alias to points
+            }.collect { (alias, points) ->
+                when {
+                    alias != null && points.isNotEmpty() -> {
+                        showHistoryMode(alias)
+                        drawHistory(points)
+                    }
+                    alias != null -> showHistoryMode(alias)
+                    else -> hideHistoryMode()
+                }
+            }
+        }
+        lifecycleScope.launch {
+            viewModel.historyInfo.collect { info ->
+                if (_binding != null) binding.tvHistoryInfo.text = info
+            }
+        }
+        lifecycleScope.launch {
+            sharedViewModel.historyRequest.collect { request ->
+                if (request != null) {
+                    viewModel.loadHistory(request.contactId, request.alias)
+                    sharedViewModel.clearHistory()
+                }
+            }
+        }
 
         viewModel.loadAllLocations()
+    }
+
+    private fun showHistoryMode(alias: String) {
+        binding.chipScrollView.visibility = View.GONE
+        binding.historyBar.visibility = View.VISIBLE
+        binding.tvHistoryTitle.text = "Ruta de $alias"
+        map.overlays.removeAll(markers.values.toSet())
+        map.invalidate()
+    }
+
+    private fun hideHistoryMode() {
+        binding.chipScrollView.visibility = View.VISIBLE
+        binding.historyBar.visibility = View.GONE
+        clearHistoryOverlays()
+    }
+
+    private fun drawHistory(points: List<LocationHistoryPointDto>) {
+        clearHistoryOverlays()
+        val geoPoints = points.map { GeoPoint(it.latitude, it.longitude) }
+
+        val polyline = Polyline(map).apply {
+            setPoints(geoPoints)
+            outlinePaint.color = Color.parseColor("#2196F3")
+            outlinePaint.strokeWidth = 8f
+        }
+        map.overlays.add(polyline)
+        historyOverlays.add(polyline)
+
+        if (geoPoints.isNotEmpty()) {
+            val startMarker = Marker(map).apply {
+                position = geoPoints.first()
+                title = "Inicio"
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                icon = createDotDrawable(Color.parseColor("#4CAF50"))
+            }
+            map.overlays.add(startMarker)
+            historyOverlays.add(startMarker)
+        }
+
+        if (geoPoints.size > 1) {
+            val endMarker = Marker(map).apply {
+                position = geoPoints.last()
+                title = "Última posición"
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                icon = createDotDrawable(Color.parseColor("#2196F3"))
+            }
+            map.overlays.add(endMarker)
+            historyOverlays.add(endMarker)
+        }
+
+        if (geoPoints.size > 1) {
+            map.zoomToBoundingBox(BoundingBox.fromGeoPoints(geoPoints), false, 60)
+        } else if (geoPoints.size == 1) {
+            map.controller.setZoom(15.0)
+            map.controller.setCenter(geoPoints.first())
+        }
+        map.invalidate()
+    }
+
+    private fun clearHistoryOverlays() {
+        map.overlays.removeAll(historyOverlays.toSet())
+        historyOverlays.clear()
+        map.invalidate()
+    }
+
+    private fun updateMap(locations: List<ContactLocationDto>) {
+        if (viewModel.historyAlias.value != null) return
+        map.overlays.removeAll(markers.values.toSet())
+        markers.clear()
+
+        val geoPoints = mutableListOf<GeoPoint>()
+        locations.forEach { loc ->
+            val position = GeoPoint(loc.latitude, loc.longitude)
+            val marker = Marker(map).apply {
+                this.position = position
+                title = loc.alias
+                icon = createMarkerBitmap(freshnessColor(loc.timestamp))
+                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                setOnMarkerClickListener { _, _ -> showContactInfo(loc); true }
+            }
+            markers[loc.contactId] = marker
+            map.overlays.add(marker)
+            geoPoints.add(position)
+        }
+
+        if (geoPoints.size > 1) {
+            map.zoomToBoundingBox(BoundingBox.fromGeoPoints(geoPoints), true, 100)
+        } else if (geoPoints.size == 1) {
+            map.controller.setZoom(15.0)
+            map.controller.setCenter(geoPoints.first())
+        }
+        map.invalidate()
     }
 
     private fun freshnessColor(timestampStr: String): Int {
@@ -102,49 +233,34 @@ class MapFragment : Fragment() {
         val size = (36 * resources.displayMetrics.density).toInt()
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { this.color = color }
-        canvas.drawCircle(size / 2f, size / 2f, size / 2f - 2f, paint)
-        val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        Paint(Paint.ANTI_ALIAS_FLAG).apply { this.color = color }.also {
+            canvas.drawCircle(size / 2f, size / 2f, size / 2f - 2f, it)
+        }
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
             this.color = Color.WHITE
             style = Paint.Style.STROKE
-            strokeWidth = (2 * resources.displayMetrics.density)
+            strokeWidth = 2 * resources.displayMetrics.density
+        }.also {
+            canvas.drawCircle(size / 2f, size / 2f, size / 2f - 2f, it)
         }
-        canvas.drawCircle(size / 2f, size / 2f, size / 2f - 2f, borderPaint)
         return BitmapDrawable(resources, bitmap)
     }
 
-    private fun updateMap(locations: List<ContactLocationDto>) {
-        map.overlays.removeAll(markers.values.toSet())
-        markers.clear()
-
-        val geoPoints = mutableListOf<GeoPoint>()
-
-        locations.forEach { loc ->
-            val position = GeoPoint(loc.latitude, loc.longitude)
-            val color = freshnessColor(loc.timestamp)
-            val marker = Marker(map).apply {
-                this.position = position
-                title = loc.alias
-                icon = createMarkerBitmap(color)
-                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                setOnMarkerClickListener { _, _ ->
-                    showContactInfo(loc)
-                    true
-                }
-            }
-            markers[loc.contactId] = marker
-            map.overlays.add(marker)
-            geoPoints.add(position)
+    private fun createDotDrawable(color: Int): BitmapDrawable {
+        val size = (28 * resources.displayMetrics.density).toInt()
+        val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bmp)
+        Paint(Paint.ANTI_ALIAS_FLAG).apply { this.color = color }.also {
+            canvas.drawCircle(size / 2f, size / 2f, size / 2f - 2f, it)
         }
-
-        if (geoPoints.size > 1) {
-            map.zoomToBoundingBox(BoundingBox.fromGeoPoints(geoPoints), true, 100)
-        } else if (geoPoints.size == 1) {
-            map.controller.setZoom(15.0)
-            map.controller.setCenter(geoPoints.first())
+        Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            this.color = Color.WHITE
+            style = Paint.Style.STROKE
+            strokeWidth = 2 * resources.displayMetrics.density
+        }.also {
+            canvas.drawCircle(size / 2f, size / 2f, size / 2f - 2f, it)
         }
-
-        map.invalidate()
+        return BitmapDrawable(resources, bmp)
     }
 
     private fun showContactInfo(location: ContactLocationDto) {
@@ -155,35 +271,22 @@ class MapFragment : Fragment() {
             Duration.between(Instant.parse(location.timestamp), Instant.now()).toMinutes()
         } catch (_: Exception) { -1L }
         val ageText = when {
-            ageMin < 0   -> location.timestamp
-            ageMin < 1   -> "Hace menos de 1 minuto"
-            ageMin < 60  -> "Hace $ageMin min"
-            else         -> "Hace ${ageMin / 60} h"
+            ageMin < 0  -> location.timestamp
+            ageMin < 1  -> "Hace menos de 1 minuto"
+            ageMin < 60 -> "Hace $ageMin min"
+            else        -> "Hace ${ageMin / 60} h"
         }
-        val batteryText = location.batteryLevel?.let { " · Batería: $it%" } ?: ""
-        view.findViewById<android.widget.TextView>(R.id.tvLastSeen).text = "$ageText$batteryText"
+        view.findViewById<android.widget.TextView>(R.id.tvLastSeen).text =
+            "$ageText${location.batteryLevel?.let { " · Batería: $it%" } ?: ""}"
         if (location.photoUrl != null) {
-            Glide.with(this)
-                .load(location.photoUrl)
-                .circleCrop()
+            Glide.with(this).load(location.photoUrl).circleCrop()
                 .into(view.findViewById(R.id.ivContactPhoto))
         }
         dialog.setContentView(view)
         dialog.show()
     }
 
-    override fun onResume() {
-        super.onResume()
-        map.onResume()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        map.onPause()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+    override fun onResume() { super.onResume(); map.onResume() }
+    override fun onPause() { super.onPause(); map.onPause() }
+    override fun onDestroyView() { super.onDestroyView(); _binding = null }
 }

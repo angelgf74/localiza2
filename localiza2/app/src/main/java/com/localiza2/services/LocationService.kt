@@ -180,12 +180,19 @@ class LocationService : Service() {
 
     private fun buildNotification(): Notification {
         val text = if (isSlowMode) "Compartiendo ubicación — modo ahorro" else "Compartiendo tu ubicación"
+        val openAppIntent = packageManager.getLaunchIntentForPackage(packageName)
+            ?.apply { flags = Intent.FLAG_ACTIVITY_SINGLE_TOP }
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, openAppIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("localiza2")
             .setContentText(text)
             .setSmallIcon(R.drawable.ic_location)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setContentIntent(pendingIntent)
             .build()
     }
 

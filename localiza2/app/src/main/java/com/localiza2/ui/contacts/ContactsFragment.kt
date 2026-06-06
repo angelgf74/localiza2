@@ -8,9 +8,11 @@ import android.os.Bundle
 import android.view.*
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
@@ -19,6 +21,7 @@ import com.localiza2.api.RetrofitClient
 import com.localiza2.databinding.FragmentContactsBinding
 import com.localiza2.models.ContactDto
 import com.localiza2.models.ContactLocationDto
+import com.localiza2.ui.map.MapSharedViewModel
 import com.localiza2.utils.SessionManager
 import kotlinx.coroutines.launch
 
@@ -29,6 +32,7 @@ class ContactsFragment : Fragment() {
     private lateinit var viewModel: ContactsViewModel
     private lateinit var adapter: ContactsAdapter
     private var deviceLocation: Location? = null
+    private val mapSharedViewModel: MapSharedViewModel by activityViewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentContactsBinding.inflate(inflater, container, false)
@@ -63,8 +67,9 @@ class ContactsFragment : Fragment() {
                     .show()
             },
             onHistory = { contact ->
-                ContactHistoryBottomSheet.newInstance(contact.id, contact.alias)
-                    .show(childFragmentManager, "history")
+                mapSharedViewModel.requestHistory(contact.id, contact.alias)
+                requireActivity().findViewById<BottomNavigationView>(R.id.bottom_navigation)
+                    ?.selectedItemId = R.id.mapFragment
             }
         )
 

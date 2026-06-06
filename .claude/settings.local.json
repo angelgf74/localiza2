@@ -52,7 +52,8 @@
       "Bash(adb *)",
       "Bash(where psql *)",
       "PowerShell(Get-ChildItem \"c:\\\\Desarrollo\\\\Proyectos\\\\localiza2\" -Force | ForEach-Object { \"$\\($_.Attributes\\)`t$\\($_.Name\\)\" })",
-      "PowerShell(pip install *)"
+      "PowerShell(pip install *)",
+      "Bash(./gradlew clean *)"
     ]
   }
 }
