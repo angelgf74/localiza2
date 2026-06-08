@@ -1,6 +1,6 @@
 'use strict';
 
-const API_BASE = 'https://angelgf.com.es/localiza2api';
+const API_BASE = 'https://localiza2-api.angelgf.com.es';
 
 const params      = new URLSearchParams(window.location.search);
 const pairToken   = params.get('token');

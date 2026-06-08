@@ -222,7 +222,7 @@ if [ "$HTTP_CODE" = "401" ] || [ "$HTTP_CODE" = "400" ] || [ "$HTTP_CODE" = "200
   echo "  OK — API respondiendo (HTTP $HTTP_CODE)"
   echo ""
   echo "  URL interna : http://127.0.0.1:$KESTREL_PORT"
-  echo "  URL pública : https://angelgf.com.es/localiza2api"
+  echo "  URL pública : https://localiza2-api.angelgf.com.es"
   echo ""
   echo "Despliegue completado."
 else

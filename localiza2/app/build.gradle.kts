@@ -19,10 +19,10 @@ android {
         applicationId = "es.angelgf.localiza2"
         minSdk = 26
         targetSdk = 35
-        versionCode = 13
-        versionName = "1.12"
+        versionCode = 14
+        versionName = "1.13"
 
-        buildConfigField("String", "API_BASE_URL", "\"https://angelgf.com.es/localiza2api/\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://localiza2-api.angelgf.com.es/\"")
     }
 
     signingConfigs {
@@ -43,7 +43,7 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
-            buildConfigField("String", "API_BASE_URL", "\"https://angelgf.com.es/localiza2api/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://localiza2-api.angelgf.com.es/\"")
         }
     }
 
