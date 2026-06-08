@@ -39,6 +39,6 @@ scp -r "$WEB_SRC_DIR/." "$SSH_HOST:$REMOTE_WEB_DIR/"
 
 echo ""
 echo "  OK — Web publicada en $REMOTE_WEB_DIR"
-echo "  URL: https://angelgf.com.es/localiza2/"
+echo "  URL: https://localiza2-app.angelgf.com.es/"
 echo ""
 echo "Despliegue completado."

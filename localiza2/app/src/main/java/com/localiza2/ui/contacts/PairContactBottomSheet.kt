@@ -123,7 +123,7 @@ class PairContactBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun buildPairUrl(token: String): String {
-        return "https://angelgf.com.es/localiza2/pair.html?token=$token"
+        return "https://localiza2-app.angelgf.com.es/pair.html?token=$token"
     }
 
     private fun generateQrBitmap(content: String, size: Int): Bitmap? = runCatching {

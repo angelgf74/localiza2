@@ -83,7 +83,7 @@ class HelpBottomSheet : BottomSheetDialogFragment() {
             title = "Aplicación web",
             body  = "localiza2 también tiene versión web, accesible desde cualquier " +
                     "navegador:\n\n" +
-                    "🌐 angelgf.com.es/localiza2\n\n" +
+                    "🌐 localiza2-app.angelgf.com.es\n\n" +
                     "Desde la web puedes:\n" +
                     "• Ver el mapa con las posiciones de tus contactos.\n" +
                     "• Gestionar contactos y aceptar invitaciones.\n" +
@@ -101,7 +101,7 @@ class HelpBottomSheet : BottomSheetDialogFragment() {
                     "• Puedes eliminar un contacto en cualquier momento; dejará de ver " +
                     "tu posición de forma inmediata.\n\n" +
                     "• Consulta la política de privacidad completa en:\n" +
-                    "angelgf.com.es/localiza2/privacy.html"
+                    "localiza2-app.angelgf.com.es/privacy.html"
         )
 
         binding.tvVersion.text = "localiza2 v${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
