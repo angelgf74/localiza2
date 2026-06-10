@@ -18,7 +18,8 @@ import java.time.Duration
 data class ContactWithLocation(
     val contact: ContactDto,
     val location: ContactLocationDto? = null,
-    val distanceMeters: Float? = null
+    val distanceMeters: Float? = null,
+    val isSelf: Boolean = false
 )
 
 class ContactsAdapter(
@@ -33,43 +34,57 @@ class ContactsAdapter(
         fun bind(item: ContactWithLocation) {
             val contact = item.contact
             binding.tvAlias.text = contact.alias
-            binding.tvEmail.text = contact.email
-            binding.tvStatus.text = when (contact.status) {
-                "Accepted" -> "Activo"
-                "Pending" -> "Pendiente"
-                else -> "Rechazado"
+
+            if (item.isSelf) {
+                binding.tvEmail.visibility = View.GONE
+                binding.tvStatus.text = "Mi posición"
+                binding.btnEdit.visibility = View.GONE
+                binding.btnDelete.visibility = View.GONE
+            } else {
+                binding.tvEmail.visibility = View.VISIBLE
+                binding.tvEmail.text = contact.email
+                binding.tvStatus.text = when (contact.status) {
+                    "Accepted" -> "Activo"
+                    "Pending" -> "Pendiente"
+                    else -> "Rechazado"
+                }
+                binding.btnEdit.visibility = View.VISIBLE
+                binding.btnDelete.visibility = View.VISIBLE
+                binding.btnEdit.setOnClickListener { onEdit(contact) }
+                binding.btnDelete.setOnClickListener { onDelete(contact) }
             }
+
             if (contact.photoUrl != null) {
                 Glide.with(binding.root).load(contact.photoUrl).circleCrop().into(binding.ivPhoto)
             }
 
             val loc = item.location
-            if (loc != null && contact.status == "Accepted") {
-                // Freshness indicator
+            if (loc != null && (item.isSelf || contact.status == "Accepted")) {
                 val ageMin = try {
                     Duration.between(Instant.parse(loc.timestamp), Instant.now()).toMinutes()
                 } catch (_: Exception) { Long.MAX_VALUE }
                 val dotColor = when {
-                    ageMin < 5  -> Color.parseColor("#4CAF50")  // green
-                    ageMin < 30 -> Color.parseColor("#FFC107")  // amber
-                    else        -> Color.parseColor("#9E9E9E")  // grey
+                    ageMin < 5  -> Color.parseColor("#4CAF50")
+                    ageMin < 30 -> Color.parseColor("#FFC107")
+                    else        -> Color.parseColor("#9E9E9E")
                 }
                 binding.viewFreshness.background.setTint(dotColor)
                 binding.viewFreshness.visibility = View.VISIBLE
 
-                // Distance
-                item.distanceMeters?.let { dist ->
-                    binding.tvDistance.text = formatDistance(dist)
-                    binding.tvDistance.visibility = View.VISIBLE
+                if (!item.isSelf) {
+                    item.distanceMeters?.let { dist ->
+                        binding.tvDistance.text = formatDistance(dist)
+                        binding.tvDistance.visibility = View.VISIBLE
+                    } ?: run { binding.tvDistance.visibility = View.GONE }
+                } else {
+                    binding.tvDistance.visibility = View.GONE
                 }
 
-                // Battery
                 loc.batteryLevel?.let { battery ->
                     binding.tvBattery.text = "$battery%"
                     binding.tvBattery.visibility = View.VISIBLE
-                }
+                } ?: run { binding.tvBattery.visibility = View.GONE }
 
-                // History button
                 binding.btnHistory.visibility = View.VISIBLE
                 binding.btnHistory.setOnClickListener { onHistory(contact) }
             } else {
@@ -78,9 +93,6 @@ class ContactsAdapter(
                 binding.tvBattery.visibility = View.GONE
                 binding.btnHistory.visibility = View.GONE
             }
-
-            binding.btnEdit.setOnClickListener { onEdit(contact) }
-            binding.btnDelete.setOnClickListener { onDelete(contact) }
         }
 
         private fun formatDistance(meters: Float): String = when {

@@ -39,6 +39,11 @@ interface ApiService {
     @GET("api/location/contacts/{contactId}")
     suspend fun getContactLocation(@Path("contactId") contactId: Int): Response<ContactLocationDto>
 
+    @GET("api/location/me/history")
+    suspend fun getMyLocationHistory(
+        @Query("limit") limit: Int = 50
+    ): Response<List<LocationHistoryPointDto>>
+
     @GET("api/location/contacts/{contactId}/history")
     suspend fun getContactLocationHistory(
         @Path("contactId") contactId: Int,

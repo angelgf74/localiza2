@@ -20,7 +20,6 @@ import com.localiza2.R
 import com.localiza2.api.RetrofitClient
 import com.localiza2.databinding.FragmentContactsBinding
 import com.localiza2.models.ContactDto
-import com.localiza2.models.ContactLocationDto
 import com.localiza2.ui.map.MapSharedViewModel
 import com.localiza2.utils.SessionManager
 import kotlinx.coroutines.launch
@@ -31,6 +30,7 @@ class ContactsFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var viewModel: ContactsViewModel
     private lateinit var adapter: ContactsAdapter
+    private lateinit var sessionManager: SessionManager
     private var deviceLocation: Location? = null
     private val mapSharedViewModel: MapSharedViewModel by activityViewModels()
 
@@ -41,7 +41,7 @@ class ContactsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val sessionManager = SessionManager(requireContext())
+        sessionManager = SessionManager(requireContext())
         viewModel = ContactsViewModel(RetrofitClient.create(sessionManager))
 
         adapter = ContactsAdapter(
@@ -120,6 +120,17 @@ class ContactsFragment : Fragment() {
         val myLat = myApiLoc?.latitude ?: deviceLocation?.latitude
         val myLng = myApiLoc?.longitude ?: deviceLocation?.longitude
 
+        val meDto = ContactDto(
+            id = -1,
+            email = sessionManager.getEmail() ?: "",
+            alias = sessionManager.getName() ?: "Yo",
+            photoUrl = null,
+            status = "Accepted",
+            locationPermissionGranted = true,
+            contactUserId = null
+        )
+        val meItem = ContactWithLocation(contact = meDto, location = myApiLoc, isSelf = true)
+
         val items = contacts.map { contact ->
             val loc = locations.firstOrNull { it.contactId == contact.id }
             val dist = if (myLat != null && myLng != null && loc != null) {
@@ -129,7 +140,7 @@ class ContactsFragment : Fragment() {
             } else null
             ContactWithLocation(contact, loc, dist)
         }
-        adapter.submitList(items)
+        adapter.submitList(listOf(meItem) + items)
     }
 
     override fun onDestroyView() { super.onDestroyView(); _binding = null }

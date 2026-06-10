@@ -64,7 +64,12 @@ class MapViewModel(private val api: ApiService) : ViewModel() {
             _historyAlias.value = alias
             _historyPoints.value = emptyList()
             _historyInfo.value = "Cargando…"
-            runCatching { api.getContactLocationHistory(contactId) }
+            val result = if (contactId == -1) {
+                runCatching { api.getMyLocationHistory() }
+            } else {
+                runCatching { api.getContactLocationHistory(contactId) }
+            }
+            result
                 .onSuccess { resp ->
                     val pts = resp.body()
                     if (pts.isNullOrEmpty()) {

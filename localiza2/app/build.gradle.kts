@@ -19,8 +19,8 @@ android {
         applicationId = "es.angelgf.localiza2"
         minSdk = 26
         targetSdk = 35
-        versionCode = 15
-        versionName = "1.14"
+        versionCode = 17
+        versionName = "1.16"
 
         buildConfigField("String", "API_BASE_URL", "\"https://localiza2-api.angelgf.com.es/\"")
     }
