@@ -107,11 +107,24 @@ public class LocationController(AppDbContext db) : ControllerBase
             .Select(u => u.Id)
             .ToListAsync();
 
-        var latestLocations = await db.UserLocations
-            .Where(l => sharingUserIds.Contains(l.UserId))
-            .GroupBy(l => l.UserId)
-            .Select(g => g.OrderByDescending(l => l.Timestamp).First())
-            .ToListAsync();
+        List<UserLocation> latestLocations;
+        if (sharingUserIds.Count == 0)
+        {
+            latestLocations = [];
+        }
+        else
+        {
+            var ids = sharingUserIds.ToArray();
+            latestLocations = await db.UserLocations
+                .FromSqlInterpolated($"""
+                    SELECT DISTINCT ON ("UserId") *
+                    FROM "UserLocations"
+                    WHERE "UserId" = ANY({ids})
+                    ORDER BY "UserId", "Timestamp" DESC
+                    """)
+                .AsNoTracking()
+                .ToListAsync();
+        }
 
         var result = latestLocations.Select(loc =>
         {
