@@ -11,6 +11,7 @@ public class User
     public DateTime? PairingCodeExpiry { get; set; }
     public string? PasswordResetToken { get; set; }
     public DateTime? PasswordResetExpiry { get; set; }
+    public bool SharingEnabled { get; set; } = true;
 
     public ICollection<Contact> Contacts { get; set; } = [];
     public ICollection<UserLocation> Locations { get; set; } = [];

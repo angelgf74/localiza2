@@ -83,6 +83,11 @@ class ContactsAdapter(
                 loc.batteryLevel?.let { battery ->
                     binding.tvBattery.text = "$battery%"
                     binding.tvBattery.visibility = View.VISIBLE
+                    binding.tvBattery.setTextColor(when {
+                        battery <= 15 -> Color.parseColor("#EF4444")
+                        battery <= 30 -> Color.parseColor("#F97316")
+                        else          -> Color.parseColor("#9CA3AF")
+                    })
                 } ?: run { binding.tvBattery.visibility = View.GONE }
 
                 binding.btnHistory.visibility = View.VISIBLE

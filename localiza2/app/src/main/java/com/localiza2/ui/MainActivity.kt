@@ -23,6 +23,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.localiza2.api.RetrofitClient
 import com.localiza2.databinding.ActivityMainBinding
+import com.localiza2.models.SetSharingDto
 import com.localiza2.services.LocationService
 import com.localiza2.ui.auth.AuthActivity
 import com.localiza2.ui.help.HelpBottomSheet
@@ -36,8 +37,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var sessionManager: SessionManager
+    private var sharingEnabled = true
 
-    // Paso 1: ubicación en primer plano + notificaciones
     private val foregroundPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
@@ -46,20 +47,13 @@ class MainActivity : AppCompatActivity() {
         if (locationGranted) {
             requestBackgroundLocation()
         } else {
-            Toast.makeText(
-                this,
-                "La app necesita acceso a la ubicación para funcionar",
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(this, "La app necesita acceso a la ubicación para funcionar", Toast.LENGTH_LONG).show()
         }
     }
 
-    // Paso 2: ubicación en segundo plano ("Permitir siempre")
-    // Android exige pedirlo en una solicitud separada para mostrar esa opción.
     private val backgroundLocationLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) {
-        // Tanto si concede como si no, arrancamos el servicio con lo que haya
         startLocationService()
         checkBatteryRestrictions()
     }
@@ -71,13 +65,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         sessionManager = SessionManager(this)
 
-        // Toolbar absorbe el alto de la barra de estado
         ViewCompat.setOnApplyWindowInsetsListener(binding.toolbar) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.updatePadding(top = bars.top)
             insets
         }
-        // Navegación inferior absorbe el alto de la barra de gestos/botones
         ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNavigation) { view, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.updatePadding(bottom = bars.bottom)
@@ -92,13 +84,15 @@ class MainActivity : AppCompatActivity() {
         binding.toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 com.localiza2.R.id.action_help -> {
-                    HelpBottomSheet.newInstance()
-                        .show(supportFragmentManager, "help")
+                    HelpBottomSheet.newInstance().show(supportFragmentManager, "help")
+                    true
+                }
+                com.localiza2.R.id.action_toggle_sharing -> {
+                    toggleSharing()
                     true
                 }
                 com.localiza2.R.id.action_suggestions -> {
-                    SuggestionsBottomSheet.newInstance()
-                        .show(supportFragmentManager, "suggestions")
+                    SuggestionsBottomSheet.newInstance().show(supportFragmentManager, "suggestions")
                     true
                 }
                 com.localiza2.R.id.action_delete_account -> {
@@ -110,18 +104,45 @@ class MainActivity : AppCompatActivity() {
         }
 
         requestPermissionsAndStartService()
+        loadSharingStatus()
 
-        // Botón "atrás": minimizar en lugar de cerrar para que el servicio siga activo
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                moveTaskToBack(true)
-            }
+            override fun handleOnBackPressed() { moveTaskToBack(true) }
         })
     }
 
     override fun onResume() {
         super.onResume()
         BatteryOptimizationHelper.showIfServiceKilledTooOften(this)
+    }
+
+    private fun loadSharingStatus() {
+        val api = RetrofitClient.create(sessionManager)
+        lifecycleScope.launch {
+            runCatching { api.getSharingStatus() }.getOrNull()?.body()?.let { status ->
+                sharingEnabled = status.sharingEnabled
+                updateSharingMenuItem()
+            }
+        }
+    }
+
+    private fun toggleSharing() {
+        val api = RetrofitClient.create(sessionManager)
+        val newValue = !sharingEnabled
+        lifecycleScope.launch {
+            runCatching { api.setSharing(SetSharingDto(newValue)) }.getOrNull()?.body()?.let { status ->
+                sharingEnabled = status.sharingEnabled
+                updateSharingMenuItem()
+                val msg = if (sharingEnabled) "Compartición reanudada" else "Compartición pausada"
+                Toast.makeText(this@MainActivity, msg, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun updateSharingMenuItem() {
+        val item = binding.toolbar.menu.findItem(com.localiza2.R.id.action_toggle_sharing) ?: return
+        item.isChecked = sharingEnabled
+        item.title = if (sharingEnabled) "Pausar compartición" else "Reanudar compartición"
     }
 
     private fun requestPermissionsAndStartService() {
@@ -134,14 +155,11 @@ class MainActivity : AppCompatActivity() {
         ) == PackageManager.PERMISSION_GRANTED
 
         when {
-            // Todo concedido: arrancar directamente
             foregroundGranted && backgroundGranted -> {
                 startLocationService()
                 checkBatteryRestrictions()
             }
-            // Ubicación en primer plano ya concedida, falta el segundo plano
             foregroundGranted -> requestBackgroundLocation()
-            // Hay que pedir primero la ubicación en primer plano
             else -> showForegroundLocationRationale()
         }
     }
@@ -170,11 +188,7 @@ class MainActivity : AppCompatActivity() {
                 foregroundPermissionLauncher.launch(needed.toTypedArray())
             }
             .setNegativeButton("Cancelar") { _, _ ->
-                Toast.makeText(
-                    this,
-                    "La app necesita acceso a la ubicación para funcionar",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(this, "La app necesita acceso a la ubicación para funcionar", Toast.LENGTH_LONG).show()
             }
             .show()
     }
@@ -188,18 +202,11 @@ class MainActivity : AppCompatActivity() {
             checkBatteryRestrictions()
             return
         }
-
-        // Explicar al usuario por qué necesitamos "Permitir siempre"
         AlertDialog.Builder(this)
             .setTitle("Ubicación en segundo plano")
-            .setMessage(
-                "Para compartir tu posición aunque la app esté cerrada, selecciona " +
-                "«Permitir siempre» en la siguiente pantalla."
-            )
+            .setMessage("Para compartir tu posición aunque la app esté cerrada, selecciona «Permitir siempre» en la siguiente pantalla.")
             .setPositiveButton("Continuar") { _, _ ->
-                backgroundLocationLauncher.launch(
-                    Manifest.permission.ACCESS_BACKGROUND_LOCATION
-                )
+                backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
             }
             .setNegativeButton("Ahora no") { _, _ ->
                 startLocationService()
@@ -220,10 +227,7 @@ class MainActivity : AppCompatActivity() {
     private fun requestBatteryOptimizationExemption() {
         AlertDialog.Builder(this)
             .setTitle("Mantener en segundo plano")
-            .setMessage(
-                "Para que localiza2 siga compartiendo tu ubicación cuando cierres la app, " +
-                "desactiva la optimización de batería para esta aplicación."
-            )
+            .setMessage("Para que localiza2 siga compartiendo tu ubicación cuando cierres la app, desactiva la optimización de batería para esta aplicación.")
             .setPositiveButton("Configurar") { _, _ ->
                 startActivity(
                     Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
@@ -231,9 +235,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 )
             }
-            .setNegativeButton("Ahora no") { _, _ ->
-                BatteryOptimizationHelper.showOnceIfNeeded(this)
-            }
+            .setNegativeButton("Ahora no") { _, _ -> BatteryOptimizationHelper.showOnceIfNeeded(this) }
             .show()
     }
 

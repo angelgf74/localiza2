@@ -18,6 +18,9 @@ public class LocationController(AppDbContext db) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> UpdateLocation([FromBody] UpdateLocationDto dto)
     {
+        var user = await db.Users.FindAsync(CurrentUserId);
+        if (user?.SharingEnabled == false) return NoContent();
+
         db.UserLocations.Add(new UserLocation
         {
             UserId       = CurrentUserId,
@@ -99,8 +102,13 @@ public class LocationController(AppDbContext db) : ControllerBase
 
         var contactUserIds = acceptedContacts.Select(c => c.ContactUserId!.Value).ToList();
 
+        var sharingUserIds = await db.Users
+            .Where(u => contactUserIds.Contains(u.Id) && u.SharingEnabled)
+            .Select(u => u.Id)
+            .ToListAsync();
+
         var latestLocations = await db.UserLocations
-            .Where(l => contactUserIds.Contains(l.UserId))
+            .Where(l => sharingUserIds.Contains(l.UserId))
             .GroupBy(l => l.UserId)
             .Select(g => g.OrderByDescending(l => l.Timestamp).First())
             .ToListAsync();

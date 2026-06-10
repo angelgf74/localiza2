@@ -9,6 +9,13 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_toggle_sharing"
+        android:title="Pausar compartición"
+        android:checkable="true"
+        android:checked="true"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_suggestions"
         android:title="Enviar sugerencia"
         android:icon="@android:drawable/ic_menu_send"

@@ -217,6 +217,26 @@ public class AuthController(AppDbContext db, EmailService emailService, TokenSer
         return Ok(new { message = "Contraseña actualizada correctamente. Ya puedes iniciar sesión." });
     }
 
+    [HttpGet("sharing")]
+    [Authorize]
+    public async Task<IActionResult> GetSharing()
+    {
+        var user = await db.Users.FindAsync(CurrentUserId);
+        if (user is null) return NotFound();
+        return Ok(new SharingStatusDto(user.SharingEnabled));
+    }
+
+    [HttpPut("sharing")]
+    [Authorize]
+    public async Task<IActionResult> SetSharing([FromBody] SetSharingDto dto)
+    {
+        var user = await db.Users.FindAsync(CurrentUserId);
+        if (user is null) return NotFound();
+        user.SharingEnabled = dto.SharingEnabled;
+        await db.SaveChangesAsync();
+        return Ok(new SharingStatusDto(user.SharingEnabled));
+    }
+
     [HttpDelete("delete-account")]
     [Authorize]
     public async Task<IActionResult> DeleteAccount()

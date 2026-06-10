@@ -5,3 +5,5 @@ public record LoginDto(string Email, string Password);
 public record LoginResponseDto(string Token, int UserId, string Name, string Email);
 public record ForgotPasswordDto(string Email);
 public record ResetPasswordDto(string Token, string NewPassword);
+public record SetSharingDto(bool SharingEnabled);
+public record SharingStatusDto(bool SharingEnabled);

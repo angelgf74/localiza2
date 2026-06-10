@@ -58,4 +58,10 @@ interface ApiService {
 
     @DELETE("api/auth/delete-account")
     suspend fun deleteAccount(): Response<Unit>
+
+    @GET("api/auth/sharing")
+    suspend fun getSharingStatus(): Response<SharingStatusResponse>
+
+    @PUT("api/auth/sharing")
+    suspend fun setSharing(@Body dto: SetSharingDto): Response<SharingStatusResponse>
 }

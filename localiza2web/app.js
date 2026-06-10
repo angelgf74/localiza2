@@ -15,12 +15,13 @@ const USER_COLOR = '#3b82f6';
 
 // ─── Estado ──────────────────────────────────────────────────────────────────
 const state = {
-  token:      sessionStorage.getItem('lz2_token'),
-  userName:   sessionStorage.getItem('lz2_name'),
-  contacts:   [],     // ContactDto[]
-  locations:  {},     // contactId → ContactLocationDto
-  userPos:    null,   // { lat, lng, accuracy, timestamp }
-  selectedId: null,   // número (contactId) | 'me' | null
+  token:          sessionStorage.getItem('lz2_token'),
+  userName:       sessionStorage.getItem('lz2_name'),
+  contacts:       [],     // ContactDto[]
+  locations:      {},     // contactId → ContactLocationDto
+  userPos:        null,   // { lat, lng, accuracy, timestamp }
+  selectedId:     null,   // número (contactId) | 'me' | null
+  sharingEnabled: true,
 };
 
 // ─── Leaflet ─────────────────────────────────────────────────────────────────
@@ -31,8 +32,10 @@ let historyLayer = null;
 const contactMarkers = {};   // contactId → L.Marker
 
 // ─── Timers ──────────────────────────────────────────────────────────────────
-let refreshTimer = null;
-let toastTimer   = null;
+let refreshTimer    = null;
+let toastTimer      = null;
+let qrRefreshTimer  = null;
+let qrCountdownTimer = null;
 
 // ════════════════════════════════════════════════════════════════════════════
 // API
@@ -63,6 +66,9 @@ const apiForgotPassword = (email) =>
 
 const apiGetContacts         = () => apiFetch('/api/contacts');
 const apiGetContactLocations = () => apiFetch('/api/location/contacts');
+const apiGetSharing          = () => apiFetch('/api/auth/sharing');
+const apiSetSharing = (enabled) =>
+  apiFetch('/api/auth/sharing', { method: 'PUT', body: JSON.stringify({ sharingEnabled: enabled }) });
 
 const apiGetMyLocationHistory      = (limit = 50) => apiFetch(`/api/location/me/history?limit=${limit}`);
 const apiGetContactLocationHistory = (id, limit = 50) => apiFetch(`/api/location/contacts/${id}/history?limit=${limit}`);
@@ -154,9 +160,40 @@ async function doForgotPassword(email) {
   }
 }
 
+async function loadSharingStatus() {
+  try {
+    const data = await apiGetSharing();
+    state.sharingEnabled = data.sharingEnabled;
+    updateSharingButton();
+  } catch { /* silencioso */ }
+}
+
+async function toggleSharing() {
+  try {
+    const data = await apiSetSharing(!state.sharingEnabled);
+    state.sharingEnabled = data.sharingEnabled;
+    updateSharingButton();
+    showToast(state.sharingEnabled ? 'Compartición reanudada' : 'Compartición pausada');
+  } catch (err) {
+    showToast(`Error: ${err.message}`, true);
+  }
+}
+
+function updateSharingButton() {
+  const btn  = document.getElementById('sharing-btn');
+  const icon = document.getElementById('sharing-icon');
+  if (!btn || !icon) return;
+  const on = state.sharingEnabled;
+  btn.title = on ? 'Pausar compartición de ubicación' : 'Reanudar compartición de ubicación';
+  btn.style.opacity = on ? '' : '0.45';
+  icon.innerHTML = on
+    ? '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>'
+    : '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
+}
+
 function doLogout() {
   Object.assign(state, { token: null, userName: null, contacts: [], locations: {},
-                          userPos: null, selectedId: null });
+                          userPos: null, selectedId: null, sharingEnabled: true });
   sessionStorage.removeItem('lz2_token');
   sessionStorage.removeItem('lz2_name');
   stopAutoRefresh();
@@ -230,7 +267,7 @@ function updateContactMarkers() {
       return;
     }
 
-    const popup = buildStandardPopup(alias, color, loc.timestamp, loc.latitude, loc.longitude);
+    const popup = buildStandardPopup(alias, color, loc.timestamp, loc.latitude, loc.longitude, loc.batteryLevel);
 
     if (contactMarkers[contact.id]) {
       contactMarkers[contact.id].setLatLng([loc.latitude, loc.longitude]);
@@ -248,10 +285,13 @@ function updateContactMarkers() {
   });
 }
 
-function buildStandardPopup(name, color, timestamp, lat, lng) {
+function buildStandardPopup(name, color, timestamp, lat, lng, batteryLevel) {
+  const batteryHtml = (batteryLevel != null && batteryLevel <= 20)
+    ? `<div class="popup-battery" style="color:#ef4444;font-size:11px;margin-top:3px">🔋 Batería baja: ${batteryLevel}%</div>`
+    : '';
   return `<div class="popup-name" style="border-left:3px solid ${color};padding-left:7px">${escapeHtml(name)}</div>
           <div class="popup-time">${formatTimeAgo(timestamp)}</div>
-          <div class="popup-coords">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>`;
+          <div class="popup-coords">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>${batteryHtml}`;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -463,6 +503,7 @@ function showApp() {
   initMap();
   renderContactList();   // muestra "YO" inmediatamente, antes de que lleguen los datos
   loadAll().then(() => { fitAllMarkers(); startAutoRefresh(); });
+  loadSharingStatus();
 }
 
 function renderContactList() {
@@ -513,11 +554,12 @@ function renderContactList() {
     const alias   = contact.alias || contact.email || 'Contacto';
     const color   = CONTACT_COLORS[idx % CONTACT_COLORS.length];
     const dotCls  = loc ? onlineDotClass(loc.timestamp) : 'offline';
+    const lowBattery = loc?.batteryLevel != null && loc.batteryLevel <= 20;
     const meta    = loc
       ? `${formatTimeAgo(loc.timestamp)}${
           state.userPos
             ? '  ·  ' + formatDist(haversine(state.userPos.lat, state.userPos.lng, loc.latitude, loc.longitude))
-            : ''}`
+            : ''}${lowBattery ? '  🔋' : ''}`
       : 'Sin ubicación';
 
     const li = document.createElement('li');
@@ -637,15 +679,20 @@ async function openPairModal() {
 
 function closePairModal() {
   document.getElementById('pair-modal').classList.add('hidden');
+  if (qrRefreshTimer)   { clearTimeout(qrRefreshTimer);    qrRefreshTimer   = null; }
+  if (qrCountdownTimer) { clearInterval(qrCountdownTimer); qrCountdownTimer = null; }
 }
 
 async function loadQrCode() {
-  const box = document.getElementById('qr-container');
+  if (qrRefreshTimer)   { clearTimeout(qrRefreshTimer);    qrRefreshTimer   = null; }
+  if (qrCountdownTimer) { clearInterval(qrCountdownTimer); qrCountdownTimer = null; }
+
+  const box   = document.getElementById('qr-container');
   const expEl = document.getElementById('qr-expiry');
   box.innerHTML = '<span style="font-size:13px;color:var(--text-muted)">Generando…</span>';
   expEl.textContent = '';
   try {
-    const data = await apiGenerateQr();
+    const data    = await apiGenerateQr();
     const pairUrl = buildPairUrl(data.token);
 
     box.innerHTML = '';
@@ -653,8 +700,19 @@ async function loadQrCode() {
     new QRCode(box, { text: pairUrl, width: 200, height: 200,
       colorDark: '#f1f5f9', colorLight: '#1e293b' });
 
-    const expDate = new Date(data.expiresAt);
-    expEl.textContent = `Válido hasta ${expDate.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}`;
+    const expiresAt = new Date(data.expiresAt);
+    const updateCountdown = () => {
+      const secsLeft = Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
+      const m = Math.floor(secsLeft / 60), s = secsLeft % 60;
+      expEl.textContent = secsLeft > 0
+        ? `Expira en ${m}:${String(s).padStart(2, '0')}`
+        : 'Renovando…';
+    };
+    updateCountdown();
+    qrCountdownTimer = setInterval(updateCountdown, 1_000);
+
+    const msLeft = expiresAt - Date.now();
+    qrRefreshTimer = setTimeout(loadQrCode, Math.max(msLeft - 30_000, 0));
   } catch (err) {
     box.innerHTML = `<span style="color:var(--danger);font-size:13px">${escapeHtml(err.message)}</span>`;
   }
@@ -704,6 +762,7 @@ document.getElementById('go-forgot').addEventListener('click', e => { e.preventD
 document.getElementById('go-login-from-reg').addEventListener('click', e => { e.preventDefault(); showLoginPanel('panel-login'); });
 document.getElementById('go-login-from-forgot').addEventListener('click', e => { e.preventDefault(); showLoginPanel('panel-login'); });
 
+document.getElementById('sharing-btn').addEventListener('click', toggleSharing);
 document.getElementById('logout-btn').addEventListener('click', doLogout);
 document.getElementById('refresh-btn').addEventListener('click', () =>
   loadAll().then(() => showToast('Datos actualizados')));

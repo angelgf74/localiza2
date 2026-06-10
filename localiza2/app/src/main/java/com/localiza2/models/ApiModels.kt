@@ -42,6 +42,9 @@ data class ContactLocationDto(
     val batteryLevel: Int? = null
 )
 
+data class SharingStatusResponse(val sharingEnabled: Boolean)
+data class SetSharingDto(val sharingEnabled: Boolean)
+
 data class LocationHistoryPointDto(
     val latitude: Double,
     val longitude: Double,
