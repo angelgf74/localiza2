@@ -1,4 +1,5 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using localiza2api.Data;
 using localiza2api.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -37,11 +38,31 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddHostedService<PruneLocationsService>();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("auth", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window      = TimeSpan.FromMinutes(1),
+                QueueLimit  = 0
+            }));
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
 var apiBaseUrl = builder.Configuration["App:BaseUrl"] ?? "";
+var webUrl     = builder.Configuration["App:WebUrl"];
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
-        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+    {
+        if (!string.IsNullOrEmpty(webUrl))
+            policy.WithOrigins(webUrl).AllowAnyMethod().AllowAnyHeader();
+        else
+            policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    }));
 
 builder.Services.AddOpenApi("v1", options =>
 {
@@ -77,6 +98,7 @@ app.MapScalarApiReference(opt =>
 });
 
 app.UseCors();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
