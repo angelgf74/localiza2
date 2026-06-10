@@ -28,70 +28,7 @@ public class LocationController(AppDbContext db) : ControllerBase
             Timestamp    = DateTime.UtcNow
         });
         await db.SaveChangesAsync();
-        await PruneLocationsAsync(CurrentUserId);
         return NoContent();
-    }
-
-    // Política de retención por ventana temporal:
-    //   Últimas 3 h     → 1 registro / minuto   (máx. 180)
-    //   3 h – 24 h      → 1 registro / 5 min    (máx. 252)
-    //   1 día – 30 días → 1 registro / 30 min   (máx. 1440)
-    //   > 30 días       → eliminar todo
-    private async Task PruneLocationsAsync(int userId)
-    {
-        var now      = DateTime.UtcNow;
-        var cut30d   = now.AddDays(-30);
-        var cut24h   = now.AddHours(-24);
-        var cut3h    = now.AddHours(-3);
-
-        // > 30 días: purga total
-        await db.Database.ExecuteSqlAsync($"""
-            DELETE FROM "UserLocations"
-            WHERE "UserId" = {userId} AND "Timestamp" < {cut30d}
-            """);
-
-        // 1 día–30 días: conservar 1 por bucket de 30 min (el más reciente)
-        await db.Database.ExecuteSqlAsync($"""
-            DELETE FROM "UserLocations"
-            WHERE "UserId" = {userId}
-              AND "Timestamp" >= {cut30d}
-              AND "Timestamp" < {cut24h}
-              AND "Id" NOT IN (
-                SELECT MAX("Id") FROM "UserLocations"
-                 WHERE "UserId" = {userId}
-                   AND "Timestamp" >= {cut30d}
-                   AND "Timestamp" < {cut24h}
-                 GROUP BY to_timestamp(floor(extract(epoch FROM "Timestamp") / 1800) * 1800)
-              )
-            """);
-
-        // 3 h–24 h: conservar 1 por bucket de 5 min
-        await db.Database.ExecuteSqlAsync($"""
-            DELETE FROM "UserLocations"
-            WHERE "UserId" = {userId}
-              AND "Timestamp" >= {cut24h}
-              AND "Timestamp" < {cut3h}
-              AND "Id" NOT IN (
-                SELECT MAX("Id") FROM "UserLocations"
-                 WHERE "UserId" = {userId}
-                   AND "Timestamp" >= {cut24h}
-                   AND "Timestamp" < {cut3h}
-                 GROUP BY to_timestamp(floor(extract(epoch FROM "Timestamp") / 300) * 300)
-              )
-            """);
-
-        // Últimas 3 h: conservar 1 por bucket de 1 min
-        await db.Database.ExecuteSqlAsync($"""
-            DELETE FROM "UserLocations"
-            WHERE "UserId" = {userId}
-              AND "Timestamp" >= {cut3h}
-              AND "Id" NOT IN (
-                SELECT MAX("Id") FROM "UserLocations"
-                 WHERE "UserId" = {userId}
-                   AND "Timestamp" >= {cut3h}
-                 GROUP BY to_timestamp(floor(extract(epoch FROM "Timestamp") / 60) * 60)
-              )
-            """);
     }
 
     [HttpGet("me")]

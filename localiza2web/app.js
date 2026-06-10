@@ -740,6 +740,15 @@ document.getElementById('invite-form').addEventListener('submit', async e => {
   }
 });
 
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    stopAutoRefresh();
+  } else if (state.token) {
+    loadAll();
+    startAutoRefresh();
+  }
+});
+
 // ════════════════════════════════════════════════════════════════════════════
 // Arranque
 // ════════════════════════════════════════════════════════════════════════════

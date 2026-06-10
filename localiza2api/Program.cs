@@ -35,6 +35,7 @@ builder.Services.AddControllers();
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddHostedService<PruneLocationsService>();
 
 var apiBaseUrl = builder.Configuration["App:BaseUrl"] ?? "";
 
