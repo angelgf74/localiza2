@@ -16,7 +16,8 @@ namespace localiza2api.Controllers;
 public class AuthController(AppDbContext db, EmailService emailService, TokenService tokenService, IConfiguration config) : ControllerBase
 {
     private int CurrentUserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-    private string WebUrl => config["App:WebUrl"] ?? config["App:BaseUrl"]!.Replace("/localiza2api", "/localiza2");
+    private string WebUrl => config["App:WebUrl"]
+        ?? (config["App:BaseUrl"] ?? "").Replace("-api.", "-app.").TrimEnd('/');
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {

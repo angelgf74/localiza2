@@ -53,7 +53,8 @@ builder.Services.AddRateLimiter(options =>
 });
 
 var apiBaseUrl = builder.Configuration["App:BaseUrl"] ?? "";
-var webUrl     = builder.Configuration["App:WebUrl"];
+var webUrl     = builder.Configuration["App:WebUrl"]
+              ?? apiBaseUrl.Replace("-api.", "-app.").TrimEnd('/');
 
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
