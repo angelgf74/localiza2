@@ -462,7 +462,7 @@ function showApp() {
   document.getElementById('nav-username').textContent = state.userName || '';
   initMap();
   renderContactList();   // muestra "YO" inmediatamente, antes de que lleguen los datos
-  loadAll().then(startAutoRefresh);
+  loadAll().then(() => { fitAllMarkers(); startAutoRefresh(); });
 }
 
 function renderContactList() {
@@ -557,6 +557,19 @@ function flyToUser() {
     map.flyTo([state.userPos.lat, state.userPos.lng], USER_ZOOM, { duration: 1 });
   } else {
     showToast('Sin posición propia almacenada', true);
+  }
+}
+
+function fitAllMarkers() {
+  if (!map) return;
+  const points = [];
+  if (state.userPos) points.push([state.userPos.lat, state.userPos.lng]);
+  Object.values(state.locations).forEach(loc => points.push([loc.latitude, loc.longitude]));
+  if (points.length === 0) return;
+  if (points.length === 1) {
+    map.flyTo(points[0], USER_ZOOM, { duration: 1 });
+  } else {
+    map.fitBounds(L.latLngBounds(points), { padding: [60, 60], maxZoom: 16 });
   }
 }
 
