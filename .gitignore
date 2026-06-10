@@ -28,17 +28,22 @@ localiza2/playstore/
 deploy/
 
 # ─── Archivos de prueba local ─────────────────────────────────────────────────
+rest/
 *.http
-*.rest
 
 # ─── Datos sensibles del proyecto ─────────────────────────────────────────────
 info.txt
 localiza2_demo.mp4
 _deploy.sh
+deploy-usb.bat
 
 # ─── Sistema operativo y editores ─────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 desktop.ini
+.vscode/
 *.log
 *.tmp
+
+# ─── Claude Code (configuración local de máquina) ─────────────────────────────
+.claude/settings.local.json
