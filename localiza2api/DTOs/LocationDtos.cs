@@ -14,3 +14,7 @@ public record ContactLocationDto(
 );
 
 public record LocationPointDto(double Latitude, double Longitude, double? Accuracy, DateTime Timestamp);
+
+public record CreateShareLinkDto(int ExpiresInMinutes = 60);
+public record ShareLinkDto(string Token, string Url, DateTime ExpiresAt);
+public record SharedLocationDto(string Name, double Latitude, double Longitude, double? Accuracy, DateTime Timestamp, DateTime ExpiresAt);

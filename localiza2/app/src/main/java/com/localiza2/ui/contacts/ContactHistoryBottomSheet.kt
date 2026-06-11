@@ -58,31 +58,51 @@ class ContactHistoryBottomSheet : BottomSheetDialogFragment() {
             controller.setZoom(13.0)
         }
 
+        binding.btnLoadMore.setOnClickListener {
+            val oldest = allPoints.firstOrNull()?.timestamp ?: return@setOnClickListener
+            binding.btnLoadMore.isEnabled = false
+            binding.btnLoadMore.text = "Cargando…"
+            lifecycleScope.launch {
+                loadHistorySuspend(before = oldest)
+                binding.btnLoadMore.isEnabled = true
+                binding.btnLoadMore.text = "Cargar más"
+            }
+        }
+
         loadHistory()
     }
 
-    private fun loadHistory() {
+    private val allPoints = mutableListOf<LocationHistoryPointDto>()
+
+    private fun loadHistory(before: String? = null) {
+        lifecycleScope.launch { loadHistorySuspend(before) }
+    }
+
+    private suspend fun loadHistorySuspend(before: String? = null) {
         val api = RetrofitClient.create(SessionManager(requireContext()))
-        lifecycleScope.launch {
-            binding.tvHistoryInfo.text = "Cargando…"
-            runCatching { api.getContactLocationHistory(contactId) }
-                .onSuccess { resp ->
-                    val points = resp.body()
-                    if (points.isNullOrEmpty()) {
-                        binding.tvHistoryInfo.text = "Sin historial disponible"
-                    } else {
-                        drawRoute(points)
-                    }
+        if (before == null) binding.tvHistoryInfo.text = "Cargando…"
+        runCatching { api.getContactLocationHistory(contactId, before = before) }
+            .onSuccess { resp ->
+                val points = resp.body()
+                if (points.isNullOrEmpty()) {
+                    if (before == null) binding.tvHistoryInfo.text = "Sin historial disponible"
+                } else {
+                    if (before == null) allPoints.clear()
+                    allPoints.addAll(0, points)
+                    drawRoute(allPoints)
+                    binding.btnLoadMore.visibility =
+                        if (points.size == 50) android.view.View.VISIBLE else android.view.View.GONE
                 }
-                .onFailure {
-                    binding.tvHistoryInfo.text = "Error al cargar el historial"
-                }
-        }
+            }
+            .onFailure {
+                binding.tvHistoryInfo.text = "Error al cargar el historial"
+            }
     }
 
     private fun drawRoute(points: List<LocationHistoryPointDto>) {
         val geoPoints = points.map { GeoPoint(it.latitude, it.longitude) }
         val map = binding.mapHistory
+        map.overlays.clear()
 
         // Polyline
         val polyline = Polyline(map).apply {

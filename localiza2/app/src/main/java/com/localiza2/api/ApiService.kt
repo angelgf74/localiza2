@@ -41,14 +41,19 @@ interface ApiService {
 
     @GET("api/location/me/history")
     suspend fun getMyLocationHistory(
-        @Query("limit") limit: Int = 50
+        @Query("limit") limit: Int = 50,
+        @Query("before") before: String? = null
     ): Response<List<LocationHistoryPointDto>>
 
     @GET("api/location/contacts/{contactId}/history")
     suspend fun getContactLocationHistory(
         @Path("contactId") contactId: Int,
-        @Query("limit") limit: Int = 50
+        @Query("limit") limit: Int = 50,
+        @Query("before") before: String? = null
     ): Response<List<LocationHistoryPointDto>>
+
+    @POST("api/location/share")
+    suspend fun createShareLink(@Body dto: CreateShareLinkDto): Response<ShareLinkResponse>
 
     @POST("api/auth/resend-confirmation")
     suspend fun resendConfirmation(@Body dto: ForgotPasswordDto): Response<MessageResponse>

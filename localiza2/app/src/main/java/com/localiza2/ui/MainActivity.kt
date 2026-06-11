@@ -23,6 +23,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.localiza2.api.RetrofitClient
 import com.localiza2.databinding.ActivityMainBinding
+import com.localiza2.models.CreateShareLinkDto
 import com.localiza2.models.SetSharingDto
 import com.localiza2.services.LocationService
 import com.localiza2.ui.auth.AuthActivity
@@ -95,6 +96,10 @@ class MainActivity : AppCompatActivity() {
                     SuggestionsBottomSheet.newInstance().show(supportFragmentManager, "suggestions")
                     true
                 }
+                com.localiza2.R.id.action_share_link -> {
+                    createAndShareLink()
+                    true
+                }
                 com.localiza2.R.id.action_delete_account -> {
                     confirmDeleteAccount()
                     true
@@ -143,6 +148,30 @@ class MainActivity : AppCompatActivity() {
         val item = binding.toolbar.menu.findItem(com.localiza2.R.id.action_toggle_sharing) ?: return
         item.isChecked = sharingEnabled
         item.title = if (sharingEnabled) "Pausar compartición" else "Reanudar compartición"
+    }
+
+    private fun createAndShareLink() {
+        val api = RetrofitClient.create(sessionManager)
+        lifecycleScope.launch {
+            try {
+                val resp = api.createShareLink(CreateShareLinkDto(60))
+                val link = resp.body()
+                if (resp.isSuccessful && link != null) {
+                    startActivity(Intent.createChooser(
+                        Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_TEXT, link.url)
+                            putExtra(Intent.EXTRA_SUBJECT, "Mi ubicación en tiempo real")
+                        },
+                        "Compartir enlace"
+                    ))
+                } else {
+                    Toast.makeText(this@MainActivity, "Error al crear el enlace", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Sin conexión. Inténtalo de nuevo.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun requestPermissionsAndStartService() {

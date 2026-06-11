@@ -51,3 +51,6 @@ data class LocationHistoryPointDto(
     val accuracy: Double?,
     val timestamp: String
 )
+
+data class CreateShareLinkDto(val expiresInMinutes: Int = 60)
+data class ShareLinkResponse(val token: String, val url: String, val expiresAt: String)

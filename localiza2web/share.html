@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ubicación compartida — localiza2</title>
+  <link rel="icon" type="image/png" href="https://shared.angelgf.com.es/localiza2/icon_512.png" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0f172a; color: #f1f5f9; height: 100dvh; display: flex; flex-direction: column; }
+    .header { padding: 12px 16px; background: #1e293b; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .header svg { color: #3b82f6; flex-shrink: 0; }
+    .header-info { flex: 1; min-width: 0; }
+    .header-name { font-size: 16px; font-weight: 600; }
+    .header-meta { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+    #map { flex: 1; }
+    .footer { padding: 8px 16px; background: #1e293b; font-size: 12px; color: #64748b; text-align: center; flex-shrink: 0; }
+    .error-box { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center; }
+    .error-box h2 { color: #ef4444; font-size: 18px; }
+    .error-box p { color: #94a3b8; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+    </svg>
+    <div class="header-info">
+      <div class="header-name" id="user-name">Cargando…</div>
+      <div class="header-meta" id="update-meta"></div>
+    </div>
+  </div>
+
+  <div id="map-container" style="display:none;flex:1">
+    <div id="map" style="height:100%"></div>
+  </div>
+  <div id="error-container" class="error-box" style="display:none">
+    <h2 id="error-title">Enlace no válido</h2>
+    <p id="error-msg">Este enlace ha expirado o no existe.</p>
+  </div>
+
+  <div class="footer" id="footer-expiry"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script>
+    'use strict';
+    const API_BASE = 'https://localiza2-api.angelgf.com.es';
+    const REFRESH_MS = 30_000;
+
+    const token = new URLSearchParams(location.search).get('token');
+
+    let map = null;
+    let marker = null;
+    let circle = null;
+    let refreshTimer = null;
+
+    function formatTimeAgo(iso) {
+      const s = Math.floor((Date.now() - new Date(iso)) / 1000);
+      if (s < 60)    return 'ahora mismo';
+      if (s < 3600)  return `hace ${Math.floor(s / 60)} min`;
+      if (s < 86400) return `hace ${Math.floor(s / 3600)} h`;
+      return `hace ${Math.floor(s / 86400)} días`;
+    }
+
+    function formatExpiry(iso) {
+      const ms = new Date(iso) - Date.now();
+      if (ms <= 0) return 'Enlace expirado';
+      const m = Math.floor(ms / 60_000);
+      const h = Math.floor(m / 60);
+      if (h > 0) return `Enlace válido ${h} h ${m % 60} min más`;
+      return `Enlace válido ${m} min más`;
+    }
+
+    function showError(title, msg) {
+      document.getElementById('user-name').textContent = 'localiza2';
+      document.getElementById('map-container').style.display = 'none';
+      const ec = document.getElementById('error-container');
+      ec.style.display = 'flex';
+      document.getElementById('error-title').textContent = title;
+      document.getElementById('error-msg').textContent = msg;
+      if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+    }
+
+    async function loadPosition() {
+      if (!token) { showError('Enlace no válido', 'No se especificó ningún token.'); return; }
+      try {
+        const res = await fetch(`${API_BASE}/api/location/share/${token}`);
+        if (res.status === 404) {
+          const body = await res.json().catch(() => ({}));
+          showError('Enlace expirado', body.message || 'Este enlace ha expirado o no existe.');
+          return;
+        }
+        if (!res.ok) { showError('Error', `Error ${res.status}`); return; }
+
+        const data = await res.json();
+
+        document.getElementById('user-name').textContent = data.name;
+        document.getElementById('update-meta').textContent =
+          `Última posición: ${formatTimeAgo(data.timestamp)}`;
+        document.getElementById('footer-expiry').textContent = formatExpiry(data.expiresAt);
+
+        document.getElementById('map-container').style.display = 'flex';
+        document.getElementById('error-container').style.display = 'none';
+
+        if (!map) {
+          map = L.map('map').setView([data.latitude, data.longitude], 15);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors', maxZoom: 19
+          }).addTo(map);
+        }
+
+        const latlng = [data.latitude, data.longitude];
+        const popupHtml = `<b>${data.name}</b><br>${formatTimeAgo(data.timestamp)}<br>
+          <small>${data.latitude.toFixed(5)}, ${data.longitude.toFixed(5)}</small>`;
+
+        if (marker) {
+          marker.setLatLng(latlng).setPopupContent(popupHtml);
+          if (data.accuracy) circle.setLatLng(latlng).setRadius(data.accuracy);
+        } else {
+          const icon = L.divIcon({
+            className: '',
+            html: `<div style="width:32px;height:32px;border-radius:50%;background:#3b82f6;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4)"></div>`,
+            iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -18],
+          });
+          marker = L.marker(latlng, { icon }).addTo(map).bindPopup(popupHtml).openPopup();
+          if (data.accuracy) {
+            circle = L.circle(latlng, { radius: data.accuracy, color: '#3b82f6', fillOpacity: 0.1, weight: 1 }).addTo(map);
+          }
+          map.flyTo(latlng, 15, { duration: 1 });
+        }
+      } catch (err) {
+        document.getElementById('update-meta').textContent = 'Error al actualizar';
+      }
+    }
+
+    loadPosition();
+    refreshTimer = setInterval(loadPosition, REFRESH_MS);
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) loadPosition();
+    });
+  </script>
+</body>
+</html>

@@ -22,6 +22,10 @@ const state = {
   userPos:        null,   // { lat, lng, accuracy, timestamp }
   selectedId:     null,   // número (contactId) | 'me' | null
   sharingEnabled: true,
+  historyPoints:  [],     // LocationPointDto[] — todos los puntos cargados para el seleccionado
+  historyHasMore: false,  // hay más puntos antiguos disponibles
+  historyLabel:   null,   // nombre del elemento seleccionado
+  historyColor:   null,   // color del elemento seleccionado
 };
 
 // ─── Leaflet ─────────────────────────────────────────────────────────────────
@@ -70,8 +74,18 @@ const apiGetSharing          = () => apiFetch('/api/auth/sharing');
 const apiSetSharing = (enabled) =>
   apiFetch('/api/auth/sharing', { method: 'PUT', body: JSON.stringify({ sharingEnabled: enabled }) });
 
-const apiGetMyLocationHistory      = (limit = 50) => apiFetch(`/api/location/me/history?limit=${limit}`);
-const apiGetContactLocationHistory = (id, limit = 50) => apiFetch(`/api/location/contacts/${id}/history?limit=${limit}`);
+const apiGetMyLocationHistory = (limit = 50, before = null) => {
+  const p = new URLSearchParams({ limit });
+  if (before) p.set('before', before);
+  return apiFetch(`/api/location/me/history?${p}`);
+};
+const apiGetContactLocationHistory = (id, limit = 50, before = null) => {
+  const p = new URLSearchParams({ limit });
+  if (before) p.set('before', before);
+  return apiFetch(`/api/location/contacts/${id}/history?${p}`);
+};
+const apiCreateShareLink = (expiresInMinutes = 60) =>
+  apiFetch('/api/location/share', { method: 'POST', body: JSON.stringify({ expiresInMinutes }) });
 
 // ════════════════════════════════════════════════════════════════════════════
 // Auth
@@ -380,9 +394,12 @@ async function selectItem(id) {
   if (state.selectedId === id) {
     const prev = state.selectedId;
     state.selectedId = null;
+    state.historyPoints = [];
+    state.historyHasMore = false;
     clearHistoryLayer();
     restoreStandardMarker(prev);
     renderContactList();
+    updateHistoryControls();
     return;
   }
 
@@ -393,22 +410,60 @@ async function selectItem(id) {
   }
 
   state.selectedId = id;
+  state.historyPoints = [];
+  state.historyHasMore = false;
   renderContactList();
   hideStandardMarker(id);
 
   showRefreshIndicator(true);
   try {
     const { label, color, history } = await fetchHistoryForId(id);
+    state.historyLabel  = label;
+    state.historyColor  = color;
+    state.historyPoints = history;
+    state.historyHasMore = history.length === 50;
     showHistory(history, label, color, true);
+    updateHistoryControls();
   } catch (err) {
     showToast(`Error al cargar historial: ${err.message}`, true);
-    // Revertir selección si falla
     state.selectedId = null;
     restoreStandardMarker(id);
     renderContactList();
+    updateHistoryControls();
   } finally {
     showRefreshIndicator(false);
   }
+}
+
+async function loadMoreHistory() {
+  if (!state.selectedId || !state.historyHasMore || !state.historyPoints.length) return;
+  const before = state.historyPoints[0].timestamp;
+
+  const btn = document.getElementById('load-more-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Cargando…'; }
+
+  try {
+    const older = state.selectedId === 'me'
+      ? await apiGetMyLocationHistory(50, before)
+      : await apiGetContactLocationHistory(state.selectedId, 50, before);
+
+    if (older.length > 0) {
+      state.historyPoints = [...older, ...state.historyPoints];
+      state.historyHasMore = older.length === 50;
+      showHistory(state.historyPoints, state.historyLabel, state.historyColor, false);
+    } else {
+      state.historyHasMore = false;
+    }
+    updateHistoryControls();
+  } catch (err) {
+    showToast(`Error al cargar más: ${err.message}`, true);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Cargar más'; }
+  }
+}
+
+function updateHistoryControls() {
+  document.getElementById('history-controls')?.classList.toggle('hidden', !state.historyHasMore);
 }
 
 async function fetchHistoryForId(id) {
@@ -465,7 +520,12 @@ async function loadAll() {
       // Refrescar historial del seleccionado sin mover el mapa
       try {
         const { label, color, history } = await fetchHistoryForId(state.selectedId);
+        state.historyLabel  = label;
+        state.historyColor  = color;
+        state.historyPoints = history;
+        state.historyHasMore = history.length === 50;
         showHistory(history, label, color, false);
+        updateHistoryControls();
       } catch { /* fallo silencioso en refresco de fondo */ }
     } else {
       updateContactMarkers();
@@ -718,6 +778,20 @@ async function loadQrCode() {
   }
 }
 
+async function createShareLink() {
+  const btn = document.getElementById('share-btn');
+  if (btn) btn.disabled = true;
+  try {
+    const data = await apiCreateShareLink(60);
+    await navigator.clipboard.writeText(data.url);
+    showToast('Enlace copiado al portapapeles (válido 1 hora)');
+  } catch (err) {
+    showToast('Error al crear enlace: ' + err.message, true);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
 function buildPairUrl(token) {
   const base = window.location.hostname === 'localhost'
     ? `${window.location.origin}`
@@ -763,6 +837,8 @@ document.getElementById('go-login-from-reg').addEventListener('click', e => { e.
 document.getElementById('go-login-from-forgot').addEventListener('click', e => { e.preventDefault(); showLoginPanel('panel-login'); });
 
 document.getElementById('sharing-btn').addEventListener('click', toggleSharing);
+document.getElementById('share-btn').addEventListener('click', createShareLink);
+document.getElementById('load-more-btn').addEventListener('click', loadMoreHistory);
 document.getElementById('logout-btn').addEventListener('click', doLogout);
 document.getElementById('refresh-btn').addEventListener('click', () =>
   loadAll().then(() => showToast('Datos actualizados')));

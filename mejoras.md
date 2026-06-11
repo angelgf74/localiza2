@@ -38,13 +38,13 @@ No hay protección contra fuerza bruta en `POST /api/auth/login` ni en `POST /ap
 
 ## Funcionalidad nueva
 
-**9. Enlace de ubicación temporal**
+**9. Enlace de ubicación temporal** ✅
 Compartir una URL de solo lectura con alguien que no tiene cuenta (caduca en X horas). Útil para "dile a alguien dónde estás" sin que se registre.
 
 **10. Geofencing / alertas de llegada**
 Notificación local en Android cuando un contacto entra o sale de un radio definido. Se puede hacer puramente en cliente (comparar coordenadas en el servicio) sin cambios en la API.
 
-**11. Historial paginado**
+**11. Historial paginado** ✅
 `GET /api/location/me/history` devuelve los últimos 50 por defecto, sin paginación. Con un parámetro `before` (timestamp) se habilita scroll infinito hacia atrás en la app y la web.
 
 ---

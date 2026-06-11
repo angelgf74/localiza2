@@ -16,6 +16,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_share_link"
+        android:title="Compartir ubicación (enlace)"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_suggestions"
         android:title="Enviar sugerencia"
         android:icon="@android:drawable/ic_menu_send"

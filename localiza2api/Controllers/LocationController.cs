@@ -1,19 +1,22 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
 using localiza2api.Data;
 using localiza2api.DTOs;
 using localiza2api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace localiza2api.Controllers;
 
 [ApiController]
 [Route("api/location")]
 [Authorize]
-public class LocationController(AppDbContext db) : ControllerBase
+public class LocationController(AppDbContext db, IConfiguration config) : ControllerBase
 {
     private int CurrentUserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    private string WebUrl => config["App:WebUrl"] ?? (config["App:BaseUrl"] ?? "").Replace("-api.", "-app.").TrimEnd('/');
 
     [HttpPost]
     public async Task<IActionResult> UpdateLocation([FromBody] UpdateLocationDto dto)
@@ -54,10 +57,13 @@ public class LocationController(AppDbContext db) : ControllerBase
     }
 
     [HttpGet("me/history")]
-    public async Task<IActionResult> GetMyLocationHistory([FromQuery] int limit = 50)
+    public async Task<IActionResult> GetMyLocationHistory([FromQuery] int limit = 50, [FromQuery] DateTime? before = null)
     {
-        var locations = await db.UserLocations
-            .Where(l => l.UserId == CurrentUserId)
+        var query = db.UserLocations.Where(l => l.UserId == CurrentUserId);
+        if (before.HasValue)
+            query = query.Where(l => l.Timestamp < before.Value.ToUniversalTime());
+
+        var locations = await query
             .OrderByDescending(l => l.Timestamp)
             .Take(limit)
             .OrderBy(l => l.Timestamp)
@@ -68,7 +74,7 @@ public class LocationController(AppDbContext db) : ControllerBase
     }
 
     [HttpGet("contacts/{contactId}/history")]
-    public async Task<IActionResult> GetContactLocationHistory(int contactId, [FromQuery] int limit = 50)
+    public async Task<IActionResult> GetContactLocationHistory(int contactId, [FromQuery] int limit = 50, [FromQuery] DateTime? before = null)
     {
         var contact = await db.Contacts.FirstOrDefaultAsync(c =>
             c.Id == contactId
@@ -79,8 +85,11 @@ public class LocationController(AppDbContext db) : ControllerBase
 
         if (contact is null) return NotFound();
 
-        var locations = await db.UserLocations
-            .Where(l => l.UserId == contact.ContactUserId)
+        var query = db.UserLocations.Where(l => l.UserId == contact.ContactUserId);
+        if (before.HasValue)
+            query = query.Where(l => l.Timestamp < before.Value.ToUniversalTime());
+
+        var locations = await query
             .OrderByDescending(l => l.Timestamp)
             .Take(limit)
             .OrderBy(l => l.Timestamp)
@@ -191,5 +200,64 @@ public class LocationController(AppDbContext db) : ControllerBase
             location.Accuracy,
             location.Timestamp,
             location.BatteryLevel));
+    }
+
+    [HttpPost("share")]
+    public async Task<IActionResult> CreateShareLink([FromBody] CreateShareLinkDto dto)
+    {
+        var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(24))
+            .Replace('+', '-').Replace('/', '_').TrimEnd('=');
+
+        var expiresAt = DateTime.UtcNow.AddMinutes(Math.Clamp(dto.ExpiresInMinutes, 5, 1440));
+
+        db.LocationShareLinks.Add(new LocationShareLink
+        {
+            Token     = token,
+            UserId    = CurrentUserId,
+            ExpiresAt = expiresAt,
+        });
+        await db.SaveChangesAsync();
+
+        var url = $"{WebUrl}/share.html?token={token}";
+        return Ok(new ShareLinkDto(token, url, expiresAt));
+    }
+
+    [HttpDelete("share/{token}")]
+    public async Task<IActionResult> RevokeShareLink(string token)
+    {
+        var link = await db.LocationShareLinks.FirstOrDefaultAsync(l =>
+            l.Token == token && l.UserId == CurrentUserId);
+
+        if (link is null) return NotFound();
+
+        db.LocationShareLinks.Remove(link);
+        await db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpGet("share/{token}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetSharedLocation(string token)
+    {
+        var link = await db.LocationShareLinks
+            .Include(l => l.User)
+            .FirstOrDefaultAsync(l => l.Token == token && l.ExpiresAt > DateTime.UtcNow);
+
+        if (link is null) return NotFound(new { message = "Enlace no válido o expirado." });
+
+        var location = await db.UserLocations
+            .Where(l => l.UserId == link.UserId)
+            .OrderByDescending(l => l.Timestamp)
+            .FirstOrDefaultAsync();
+
+        if (location is null) return NotFound(new { message = "Sin ubicación disponible." });
+
+        return Ok(new SharedLocationDto(
+            link.User?.Name ?? "Usuario",
+            location.Latitude,
+            location.Longitude,
+            location.Accuracy,
+            location.Timestamp,
+            link.ExpiresAt));
     }
 }

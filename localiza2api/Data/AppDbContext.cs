@@ -10,6 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Contact> Contacts => Set<Contact>();
     public DbSet<ContactInvitation> ContactInvitations => Set<ContactInvitation>();
     public DbSet<UserLocation> UserLocations => Set<UserLocation>();
+    public DbSet<LocationShareLink> LocationShareLinks => Set<LocationShareLink>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -67,6 +68,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasIndex(p => p.Token).IsUnique();
             e.HasIndex(p => p.Email).IsUnique();
             e.Property(p => p.Email).HasMaxLength(256);
+        });
+
+        modelBuilder.Entity<LocationShareLink>(e =>
+        {
+            e.HasIndex(l => l.Token).IsUnique();
+            e.Property(l => l.Token).HasMaxLength(64);
+            e.HasOne(l => l.User)
+                .WithMany()
+                .HasForeignKey(l => l.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
