@@ -1,18 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Tema con paleta web personalizada (auto light/dark) -->
-    <style name="Theme.Localiza2" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Colores principales -->
+    <!-- Paleta web sobre el mismo tema base que tenía el proyecto originalmente -->
+    <style name="Theme.Localiza2" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Colores primarios (M3) -->
         <item name="colorPrimary">@color/accent_primary</item>
-        <item name="colorPrimaryVariant">@color/accent_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/bg_surface_2</item>
+        <item name="colorOnPrimaryContainer">@color/accent_light</item>
+
+        <!-- Colores secundarios (M3) -->
         <item name="colorSecondary">@color/accent_primary</item>
-        <item name="colorSecondaryVariant">@color/accent_dark</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSecondaryContainer">@color/bg_surface_2</item>
+        <item name="colorOnSecondaryContainer">@color/accent_light</item>
+
+        <!-- Error (M3) -->
         <item name="colorError">@color/danger</item>
         <item name="colorOnError">@color/white</item>
+        <item name="colorErrorContainer">@color/bg_surface_2</item>
+        <item name="colorOnErrorContainer">@color/danger</item>
 
-        <!-- Fondos -->
-        <item name="android:colorBackground">@color/bg_primary</item>
+        <!-- Superficie y fondo (M3) -->
         <item name="colorSurface">@color/bg_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/bg_surface_2</item>
+        <item name="colorOnSurfaceVariant">@color/text_muted</item>
+        <item name="android:colorBackground">@color/bg_primary</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+
+        <!-- Outline y scrim (M3) -->
+        <item name="colorOutline">@color/bg_surface_3</item>
+        <item name="colorOutlineVariant">@color/bg_surface_2</item>
+        <item name="colorSurfaceContainerLow">@color/bg_surface</item>
+        <item name="colorSurfaceContainer">@color/bg_surface_2</item>
+        <item name="colorSurfaceContainerHigh">@color/bg_surface_3</item>
 
         <!-- Texto -->
         <item name="android:textColorPrimary">@color/text_primary</item>
