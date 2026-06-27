@@ -1,7 +1,9 @@
 'use strict';
 
 // ─── Configuración ───────────────────────────────────────────────────────────
-const API_BASE       = 'https://localiza2-api.angelgf.com.es';
+// Detectar ambiente (local vs producción)
+const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE       = isDev ? 'http://localhost:5000' : 'https://localiza2-api.angelgf.com.es';
 const REFRESH_MS     = 30_000;
 const DEFAULT_CENTER = [40.4168, -3.7038];
 const DEFAULT_ZOOM   = 6;

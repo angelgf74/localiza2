@@ -25,6 +25,18 @@ android {
         buildConfigField("String", "API_BASE_URL", "\"https://localiza2-api.angelgf.com.es/\"")
     }
 
+    flavorDimensions.add("environment")
+    productFlavors {
+        create("production") {
+            dimension = "environment"
+            buildConfigField("String", "API_BASE_URL", "\"https://localiza2-api.angelgf.com.es/\"")
+        }
+        create("development") {
+            dimension = "environment"
+            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:5000/\"")
+        }
+    }
+
     signingConfigs {
         create("release") {
             storeFile = rootProject.file(keystoreProperties["storeFile"] as String)
