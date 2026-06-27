@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- ── Tema oscuro personalizado con paleta web ──────────────────────── -->
-    <style name="Theme.Localiza2" parent="Theme.MaterialComponents.NoActionBar">
-        <!-- Colores principales (Material Components) -->
+    <!-- Tema oscuro con paleta web personalizada -->
+    <style name="Theme.Localiza2" parent="Theme.MaterialComponents.Dark.NoActionBar">
+        <!-- Colores principales -->
         <item name="colorPrimary">@color/accent_primary</item>
         <item name="colorPrimaryVariant">@color/accent_dark</item>
         <item name="colorSecondary">@color/accent_primary</item>
         <item name="colorSecondaryVariant">@color/accent_dark</item>
         <item name="colorError">@color/danger</item>
+        <item name="colorOnError">@color/white</item>
 
-        <!-- Fondos y superficies -->
+        <!-- Fondos -->
         <item name="android:colorBackground">@color/bg_primary</item>
         <item name="colorSurface">@color/bg_surface</item>
 
@@ -17,15 +18,5 @@
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColorSecondary">@color/text_muted</item>
         <item name="android:textColorHint">@color/text_hint</item>
-
-        <!-- Material Components specifics -->
-        <item name="colorOnPrimary">@color/white</item>
-        <item name="colorOnSecondary">@color/white</item>
-        <item name="colorOnError">@color/white</item>
-        <item name="colorOnBackground">@color/text_primary</item>
-        <item name="colorOnSurface">@color/text_primary</item>
-
-        <!-- Bottom navigation y toolbar -->
-        <item name="bottomNavigationStyle">@style/Widget.MaterialComponents.BottomNavigationView</item>
     </style>
 </resources>
