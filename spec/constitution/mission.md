@@ -4,31 +4,31 @@ _Define la razón de ser del proyecto. Es la referencia que decide si una featur
 
 ## Qué construimos
 
-<Una o dos frases claras: qué es el producto y qué problema resuelve.>
+Localiza2 es una plataforma de compartición de ubicación en tiempo real que permite a grupos de amigos, familias o equipos verse mutuamente en un mapa. Resuelve el problema de coordinar encuentros, cuidar el bienestar de seres queridos y colaborar sabiendo dónde está cada quién, sin depender de apps de redes sociales ni compartir perfiles públicos.
 
-_Si ayuda, enumera las piezas principales del producto:_
-
-1. **<Pieza 1>** — <qué hace>.
-2. **<Pieza 2>** — <qué hace>.
-3. **<Pieza 3>** — <qué hace>.
+1. **App Android** — Cliente nativo con GPS en segundo plano, resiliencia offline y optimización de batería.
+2. **API REST (.NET)** — Backend con autenticación JWT, emparejamiento bilateral, historial paginado y poda automática.
+3. **Dashboard web** — Interfaz SPA con mapa interactivo, sin necesidad de instalar app.
 
 ## Para quién
 
-- <Usuario o público principal y qué busca.>
-- <Usuario secundario, si lo hay.>
-- <Otros interesados: cliente, equipo, autor…>
+- **Usuarios primarios:** Amigos y familias que quieren verse en un mapa en tiempo real sin compartir perfiles públicos.
+- **Cuidadores:** Padres de adolescentes o hijos de ancianos que necesitan saber dónde están sus seres queridos.
+- **Equipos colaborativos:** Grupos de trabajo en campo (logística, construcción, delivery) que necesitan coordinar posiciones.
+- **Desarrollador:** Proyecto personal para ejercitar full-stack (Android + .NET + web).
 
 ## Principios
 
-_Las ideas rectoras que guían las decisiones de producto y técnicas. 3-5 puntos._
-
-- **<Principio>** — <qué implica en la práctica>.
-- **<Principio>** — <qué implica en la práctica>.
-- **<Principio>** — <qué implica en la práctica>.
+- **Privacidad por defecto** — Solo ves contactos que aceptaron mutuamente tu invitación. No hay perfiles públicos ni feeds. Control total sobre quién ve tu ubicación.
+- **Simplicidad y eficiencia** — Interfaz minimalista. Recolecta solo lo necesario (lat/lon/batería). No hay mensajería, fotos, ni funcionalidades secundarias. Una tarea, bien hecha.
+- **Resiliencia sin intervención** — App sobrevive a caídas de red, boot del teléfono, optimización de batería OEM. Se recupera automáticamente sin que el usuario reabra la app.
+- **Datos comprimidos inteligentemente** — Retiene historial con resolución escalonada: últimas 3h precisas (1 pt/min), después se comprime automáticamente. Economiza almacenamiento sin perder datos recientes.
+- **Acceso equitativo** — Funciona en navegador para usuarios que no instalen la app. Compartición pública temporal (sin login) para casos puntuales.
 
 ## Qué NO es
 
-_Acota el alcance: lo que el proyecto deliberadamente no pretende ser. Evita malentendidos y feature creep._
-
-- <Algo que el proyecto NO es / NO hace.>
-- <Otro límite de alcance.>
+- No es una red social — sin perfiles públicos, sin feeds, sin "descubrimiento" de usuarios.
+- No es mensajería — ubicación sola, no hay chats ni notificaciones.
+- No es rastreador comercial — sin publicidad, sin venta de datos, sin propósitos de marketing.
+- No es SaaS empresarial — producto personal, sin soporte pago, sin SLA garantizado.
+- No es centro de datos — almacenamiento limitado, poda agresiva de historial antiguos, privacidad sobre escalabilidad.
