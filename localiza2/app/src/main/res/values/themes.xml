@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Tema oscuro con paleta web personalizada -->
-    <style name="Theme.Localiza2" parent="Theme.MaterialComponents.Dark.NoActionBar">
+    <!-- Tema con paleta web personalizada (auto light/dark) -->
+    <style name="Theme.Localiza2" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Colores principales -->
         <item name="colorPrimary">@color/accent_primary</item>
         <item name="colorPrimaryVariant">@color/accent_dark</item>

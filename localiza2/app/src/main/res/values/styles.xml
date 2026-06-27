@@ -1,24 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Nota: Mantener minimo. Los TextAppearances de Material3 se aplican via themes.xml -->
+    <!-- Nota: Minimo. Los estilos se heredan del tema base MaterialComponents.DayNight -->
 
-    <!-- ── TextAppearances simples (solo override de colores) ──────────── -->
-
-    <style name="TextAppearance.Localiza2.Headline" parent="TextAppearance.AppCompat.Headline">
-        <item name="android:textColor">@color/text_primary</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-
-    <style name="TextAppearance.Localiza2.Subtitle" parent="TextAppearance.AppCompat.Subheading">
-        <item name="android:textColor">@color/text_muted</item>
-    </style>
-
-    <style name="TextAppearance.Localiza2.Body" parent="TextAppearance.AppCompat.Body1">
-        <item name="android:textColor">@color/text_primary</item>
-    </style>
-
-    <style name="TextAppearance.Localiza2.Caption" parent="TextAppearance.AppCompat.Caption">
-        <item name="android:textColor">@color/text_muted</item>
-    </style>
+    <!-- Sobrescribir colores para componentes si es necesario -->
+    <!-- Por ahora vacio - los colores se aplican via theme colors en themes.xml -->
 
 </resources>
