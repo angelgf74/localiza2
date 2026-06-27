@@ -7,10 +7,10 @@ Objetivo: Probar ambas versiones (Android via USB, Web en localhost) contra API 
 
 ```
 Tu PC (Windows):
-├─ API .NET:        localhost:5000
+├─ API .NET:        localhost:5135 (puerto por defecto ASP.NET)
 ├─ Web HTML:        localhost:8000 (python -m http.server)
 └─ Dispositivo Android (USB)
-   └─ Conecta a:    http://10.0.2.2:5000 (alias de localhost en Android)
+   └─ Conecta a:    http://10.0.2.2:5135 (alias de localhost en Android)
 ```
 
 ---
@@ -45,7 +45,7 @@ cd localiza2
 ```
 
 Esto:
-1. Compila APK con API_BASE_URL = http://10.0.2.2:5000
+1. Compila APK con API_BASE_URL = http://10.0.2.2:5135
 2. La instala directamente en el dispositivo USB
 
 Espera 2-3 minutos. Debera terminar con:
@@ -66,7 +66,7 @@ dotnet run
 Deberia ver algo como:
 ```
 info: Microsoft.Hosting.Lifetime[14]
-      Now listening on: http://localhost:5000
+      Now listening on: http://localhost:5135
       Now listening on: https://localhost:5001
 ```
 
@@ -74,7 +74,7 @@ info: Microsoft.Hosting.Lifetime[14]
 
 ### Verificar API funciona (en otra PowerShell):
 ```powershell
-curl http://localhost:5000/scalar
+curl http://localhost:5135/scalar
 ```
 
 Deberia devolver HTML (OpenAPI docs).
@@ -106,7 +106,7 @@ Serving HTTP on 0.0.0.0 port 8000
 3. Deberia cargar login
 
 ### La web detectara automaticamente que esta en localhost
-- Si ve `http://localhost:8000` → API es `http://localhost:5000`
+- Si ve `http://localhost:8000` → API es `http://localhost:5135`
 - Si ve `https://localiza2-app.angelgf.com.es` → API es `https://localiza2-api.angelgf.com.es`
 
 ---
@@ -142,7 +142,7 @@ Serving HTTP on 0.0.0.0 port 8000
 ### "Connection refused" en Android
 **Problema**: API no esta corriendo
 **Solucion**: 
-- Verifica que PowerShell del paso 3 tenga `localhost:5000` en escucha
+- Verifica que PowerShell del paso 3 tenga `localhost:5135` en escucha
 - Reinicia: `cd localiza2api && dotnet run`
 
 ### "Cannot GET /" en navegador
