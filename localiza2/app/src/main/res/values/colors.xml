@@ -1,9 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
+    <!-- ── Dark backgrounds (de la paleta web) ─────────────────────────────── -->
+    <color name="bg_primary">#0f172a</color>
+    <color name="bg_surface">#1e293b</color>
+    <color name="bg_surface_2">#334155</color>
+    <color name="bg_surface_3">#475569</color>
+
+    <!-- ── Accents (colores principales) ────────────────────────────────────── -->
+    <color name="accent_primary">#3b82f6</color>
+    <color name="accent_dark">#2563eb</color>
+    <color name="accent_light">#60a5fa</color>
+
+    <!-- ── Semantic colors (estados) ───────────────────────────────────────── -->
+    <color name="success">#22c55e</color>
+    <color name="warning">#f59e0b</color>
+    <color name="danger">#ef4444</color>
+
+    <!-- ── Text colors (tipografía) ────────────────────────────────────────── -->
+    <color name="text_primary">#f1f5f9</color>
+    <color name="text_muted">#94a3b8</color>
+    <color name="text_hint">#64748b</color>
+
+    <!-- ── Special colors (mapa, etc.) ───────────────────────────────────── -->
+    <color name="map_bg">#1a2744</color>
+
+    <!-- ── Legacy colors (compatibilidad) ──────────────────────────────────– -->
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
 </resources>

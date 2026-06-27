@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ── Dark backgrounds (mismo que light, para modo oscuro) ────────── -->
+    <color name="bg_primary">#0f172a</color>
+    <color name="bg_surface">#1e293b</color>
+    <color name="bg_surface_2">#334155</color>
+    <color name="bg_surface_3">#475569</color>
+
+    <!-- ── Accents ────────────────────────────────────────────────────── -->
+    <color name="accent_primary">#3b82f6</color>
+    <color name="accent_dark">#2563eb</color>
+    <color name="accent_light">#60a5fa</color>
+
+    <!-- ── Semantic ────────────────────────────────────────────────────── -->
+    <color name="success">#22c55e</color>
+    <color name="warning">#f59e0b</color>
+    <color name="danger">#ef4444</color>
+
+    <!-- ── Text ──────────────────────────────────────────────────────── -->
+    <color name="text_primary">#f1f5f9</color>
+    <color name="text_muted">#94a3b8</color>
+    <color name="text_hint">#64748b</color>
+
+    <!-- ── Special ────────────────────────────────────────────────────── -->
+    <color name="map_bg">#1a2744</color>
+
+    <!-- ── Legacy ──────────────────────────────────────────────────────– -->
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+</resources>

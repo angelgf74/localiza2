@@ -1,8 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Localiza2" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/purple_500</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
+    <!-- ── Tema oscuro personalizado con paleta web ──────────────────────── -->
+    <style name="Theme.Localiza2" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Colores principales -->
+        <item name="colorPrimary">@color/accent_primary</item>
         <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/bg_surface_2</item>
+        <item name="colorOnPrimaryContainer">@color/accent_light</item>
+
+        <!-- Colores secundarios -->
+        <item name="colorSecondary">@color/accent_primary</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSecondaryContainer">@color/bg_surface_2</item>
+        <item name="colorOnSecondaryContainer">@color/accent_light</item>
+
+        <!-- Colores de error/peligro -->
+        <item name="colorError">@color/danger</item>
+        <item name="colorOnError">@color/white</item>
+        <item name="colorErrorContainer">@color/bg_surface_2</item>
+        <item name="colorOnErrorContainer">@color/danger</item>
+
+        <!-- Fondos y superficies -->
+        <item name="android:colorBackground">@color/bg_primary</item>
+        <item name="colorSurface">@color/bg_surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorSurfaceVariant">@color/bg_surface_2</item>
+        <item name="colorOnSurfaceVariant">@color/text_muted</item>
+
+        <!-- Outlines y bordes -->
+        <item name="colorOutline">@color/bg_surface_3</item>
+        <item name="colorOutlineVariant">@color/bg_surface_2</item>
+
+        <!-- Scrim (para dialogs/modals) -->
+        <item name="scrimBackground">@color/black</item>
+
+        <!-- Tipografía Material 3 -->
+        <item name="textAppearanceDisplayLarge">@style/TextAppearance.Localiza2.DisplayLarge</item>
+        <item name="textAppearanceDisplayMedium">@style/TextAppearance.Localiza2.DisplayMedium</item>
+        <item name="textAppearanceDisplaySmall">@style/TextAppearance.Localiza2.DisplaySmall</item>
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.Localiza2.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.Localiza2.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Localiza2.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Localiza2.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Localiza2.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Localiza2.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Localiza2.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Localiza2.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Localiza2.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Localiza2.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Localiza2.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Localiza2.LabelSmall</item>
     </style>
 </resources>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ── Espaciado base (escala modular 8px) ──────────────────────────── -->
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_md">12dp</dimen>
+    <dimen name="spacing_lg">16dp</dimen>
+    <dimen name="spacing_xl">24dp</dimen>
+    <dimen name="spacing_2xl">32dp</dimen>
+
+    <!-- ── Border radius ──────────────────────────────────────────────────── -->
+    <dimen name="radius_sm">6dp</dimen>
+    <dimen name="radius_md">10dp</dimen>
+    <dimen name="radius_lg">12dp</dimen>
+
+    <!-- ── Tamaños de avatar ───────────────────────────────────────────────── -->
+    <dimen name="avatar_size_xs">24dp</dimen>
+    <dimen name="avatar_size_sm">32dp</dimen>
+    <dimen name="avatar_size_md">40dp</dimen>
+    <dimen name="avatar_size_lg">48dp</dimen>
+    <dimen name="avatar_size_xl">56dp</dimen>
+
+    <!-- ── Tamaños de iconos ───────────────────────────────────────────────── -->
+    <dimen name="icon_size_sm">16dp</dimen>
+    <dimen name="icon_size_md">20dp</dimen>
+    <dimen name="icon_size_lg">24dp</dimen>
+    <dimen name="icon_size_xl">32dp</dimen>
+
+    <!-- ── Componentes de layout ───────────────────────────────────────────── -->
+    <dimen name="toolbar_height">56dp</dimen>
+    <dimen name="bottomnav_height">56dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
+    <!-- ── Tipografía (tamaños en sp) ──────────────────────────────────────── -->
+    <dimen name="text_size_xs">11sp</dimen>
+    <dimen name="text_size_sm">12sp</dimen>
+    <dimen name="text_size_body">14sp</dimen>
+    <dimen name="text_size_subtitle">15sp</dimen>
+    <dimen name="text_size_title">16sp</dimen>
+    <dimen name="text_size_headline">18sp</dimen>
+
+    <!-- ── Elevation/Shadow ────────────────────────────────────────────────── -->
+    <dimen name="elevation_none">0dp</dimen>
+    <dimen name="elevation_sm">2dp</dimen>
+    <dimen name="elevation_md">4dp</dimen>
+    <dimen name="elevation_lg">8dp</dimen>
+
+</resources>
