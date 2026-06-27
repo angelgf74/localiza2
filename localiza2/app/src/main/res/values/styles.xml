@@ -60,34 +60,27 @@
     <!-- ── Button Styles ──────────────────────────────────────────────────── -->
 
     <!-- Primary Button -->
-    <style name="Widget.Localiza2.Button.Primary" parent="Widget.Material3.Button">
+    <style name="Widget.Localiza2.Button.Primary" parent="Widget.MaterialComponents.Button">
         <item name="android:textColor">@color/white</item>
         <item name="backgroundTint">@color/accent_primary</item>
         <item name="cornerRadius">6dp</item>
     </style>
 
     <!-- Outline Button -->
-    <style name="Widget.Localiza2.Button.Outline" parent="Widget.Material3.OutlinedButton">
+    <style name="Widget.Localiza2.Button.Outline" parent="Widget.MaterialComponents.OutlinedButton">
         <item name="android:textColor">@color/text_muted</item>
         <item name="strokeColor">@color/bg_surface_3</item>
         <item name="cornerRadius">6dp</item>
     </style>
 
     <!-- Text Button (no background) -->
-    <style name="Widget.Localiza2.Button.Text" parent="Widget.Material3.Button.TextButton">
+    <style name="Widget.Localiza2.Button.Text" parent="Widget.MaterialComponents.Button.TextButton">
         <item name="android:textColor">@color/accent_primary</item>
-    </style>
-
-    <!-- ── Icon Button ────────────────────────────────────────────────────── -->
-
-    <style name="Widget.Localiza2.IconButton" parent="Widget.Material3.Button.IconButton">
-        <item name="android:textColor">@color/text_muted</item>
-        <item name="tint">@color/text_muted</item>
     </style>
 
     <!-- ── Card View ──────────────────────────────────────────────────────── -->
 
-    <style name="Widget.Localiza2.CardView" parent="Widget.Material3.CardView.Elevated">
+    <style name="Widget.Localiza2.CardView" parent="Widget.MaterialComponents.CardView">
         <item name="cardBackgroundColor">@color/bg_surface</item>
         <item name="cardCornerRadius">10dp</item>
         <item name="cardElevation">0dp</item>
@@ -97,7 +90,7 @@
 
     <!-- ── Text Input ──────────────────────────────────────────────────────── -->
 
-    <style name="Widget.Localiza2.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+    <style name="Widget.Localiza2.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <item name="boxBackgroundColor">@color/bg_primary</item>
         <item name="boxStrokeColor">@color/bg_surface_3</item>
         <item name="boxCornerRadiusBottomEnd">6dp</item>
@@ -105,13 +98,6 @@
         <item name="boxCornerRadiusTopEnd">6dp</item>
         <item name="boxCornerRadiusTopStart">6dp</item>
         <item name="hintTextColor">@color/text_muted</item>
-    </style>
-
-    <!-- ── Toolbar ────────────────────────────────────────────────────────── -->
-
-    <style name="Widget.Localiza2.Toolbar" parent="Widget.Material3.AppBarLayout.Primary">
-        <item name="android:background">@color/bg_surface</item>
-        <item name="titleTextColor">@color/text_primary</item>
     </style>
 
 </resources>
