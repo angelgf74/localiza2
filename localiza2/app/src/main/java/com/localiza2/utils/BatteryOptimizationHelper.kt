@@ -7,7 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.appcompat.app.AppCompatActivity
 
 /**
@@ -92,7 +92,7 @@ object BatteryOptimizationHelper {
         val message = buildMessage(oem, isUrgent)
         val intent = resolveSettingsIntent(activity, oem)
 
-        AlertDialog.Builder(activity)
+        MaterialAlertDialogBuilder(activity)
             .setTitle(title)
             .setMessage(message)
             .setPositiveButton("Abrir ajustes") { _, _ ->

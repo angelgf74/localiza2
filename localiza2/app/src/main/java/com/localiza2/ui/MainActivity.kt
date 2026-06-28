@@ -11,7 +11,7 @@ import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -194,7 +194,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showForegroundLocationRationale() {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("Acceso a la ubicación")
             .setMessage(
                 "localiza2 necesita acceder a tu ubicación para compartirla en tiempo real " +
@@ -231,7 +231,7 @@ class MainActivity : AppCompatActivity() {
             checkBatteryRestrictions()
             return
         }
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("Ubicación en segundo plano")
             .setMessage("Para compartir tu posición aunque la app esté cerrada, selecciona «Permitir siempre» en la siguiente pantalla.")
             .setPositiveButton("Continuar") { _, _ ->
@@ -254,7 +254,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestBatteryOptimizationExemption() {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("Mantener en segundo plano")
             .setMessage("Para que localiza2 siga compartiendo tu ubicación cuando cierres la app, desactiva la optimización de batería para esta aplicación.")
             .setPositiveButton("Configurar") { _, _ ->
@@ -274,7 +274,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun confirmDeleteAccount() {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle("Eliminar cuenta")
             .setMessage("Se borrarán tu cuenta, todos tus contactos y todo el historial de ubicación. Esta acción no se puede deshacer.")
             .setPositiveButton("Eliminar") { _, _ -> doDeleteAccount() }
