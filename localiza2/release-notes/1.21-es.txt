@@ -1,0 +1,4 @@
+• Historial de ruta: toca cualquier punto del recorrido para ver cuándo estuvo allí el contacto («hace 5 min»).
+• Lista de contactos renovada: consulta el tiempo desde la última actualización y el nivel de batería, y accede directamente al historial, la edición o la eliminación.
+• Nueva opción para cerrar sesión desde el menú.
+• Interfaz más clara: tema oscuro unificado y avisos de permisos más legibles.
