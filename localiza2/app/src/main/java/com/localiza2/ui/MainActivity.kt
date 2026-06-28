@@ -100,6 +100,10 @@ class MainActivity : AppCompatActivity() {
                     createAndShareLink()
                     true
                 }
+                com.localiza2.R.id.action_logout -> {
+                    confirmLogout()
+                    true
+                }
                 com.localiza2.R.id.action_delete_account -> {
                     confirmDeleteAccount()
                     true
@@ -271,6 +275,21 @@ class MainActivity : AppCompatActivity() {
     private fun startLocationService() {
         startForegroundService(Intent(this, LocationService::class.java))
         WatchdogWorker.schedulePeriodicWatch(this)
+    }
+
+    private fun confirmLogout() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Cerrar sesión")
+            .setMessage("¿Seguro que quieres cerrar sesión?")
+            .setPositiveButton("Cerrar sesión") { _, _ ->
+                stopService(Intent(this, LocationService::class.java))
+                sessionManager.clearSession()
+                startActivity(Intent(this, AuthActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                })
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
     }
 
     private fun confirmDeleteAccount() {

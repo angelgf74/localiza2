@@ -27,6 +27,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_logout"
+        android:title="Cerrar sesión"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_delete_account"
         android:title="Eliminar cuenta"
         android:icon="@android:drawable/ic_menu_delete"
