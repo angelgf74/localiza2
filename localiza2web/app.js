@@ -72,6 +72,12 @@ const apiForgotPassword = (email) =>
 
 const apiGetContacts         = () => apiFetch('/api/contacts');
 const apiGetContactLocations = () => apiFetch('/api/location/contacts');
+const apiDeleteContact       = id => apiFetch(`/api/contacts/${id}`, { method: 'DELETE' });
+const apiUpdateContact       = (id, alias) => apiFetch(`/api/contacts/${id}`, {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ alias, photoUrl: null })
+});
 const apiGetSharing          = () => apiFetch('/api/auth/sharing');
 const apiSetSharing = (enabled) =>
   apiFetch('/api/auth/sharing', { method: 'PUT', body: JSON.stringify({ sharingEnabled: enabled }) });
@@ -616,12 +622,12 @@ function renderContactList() {
     const alias   = contact.alias || contact.email || 'Contacto';
     const color   = CONTACT_COLORS[idx % CONTACT_COLORS.length];
     const dotCls  = loc ? onlineDotClass(loc.timestamp) : 'offline';
-    const lowBattery = loc?.batteryLevel != null && loc.batteryLevel <= 20;
+    const batteryText = loc?.batteryLevel != null ? `  🔋 ${loc.batteryLevel}%` : '';
     const meta    = loc
       ? `${formatTimeAgo(loc.timestamp)}${
           state.userPos
             ? '  ·  ' + formatDist(haversine(state.userPos.lat, state.userPos.lng, loc.latitude, loc.longitude))
-            : ''}${lowBattery ? '  🔋' : ''}`
+            : ''}${batteryText}`
       : 'Sin ubicación';
 
     const li = document.createElement('li');
@@ -637,10 +643,45 @@ function renderContactList() {
         <div class="contact-meta">${escapeHtml(meta)}</div>
       </div>
       <div class="contact-dot ${dotCls}"></div>
+      <div class="contact-actions">
+        <button class="contact-action-btn" title="Ver ruta" data-action="history">⏱</button>
+        <button class="contact-action-btn" title="Editar alias" data-action="edit">✎</button>
+        <button class="contact-action-btn danger" title="Eliminar contacto" data-action="delete">✕</button>
+      </div>
     `;
     li.addEventListener('click', () => selectItem(contact.id));
+    li.querySelector('[data-action="history"]').addEventListener('click', e => {
+      e.stopPropagation(); selectItem(contact.id);
+    });
+    li.querySelector('[data-action="edit"]').addEventListener('click', e => {
+      e.stopPropagation(); doEditContact(contact.id, alias);
+    });
+    li.querySelector('[data-action="delete"]').addEventListener('click', e => {
+      e.stopPropagation(); doDeleteContact(contact.id, alias);
+    });
     list.appendChild(li);
   });
+}
+
+async function doDeleteContact(id, alias) {
+  if (!confirm(`¿Eliminar a ${alias}?`)) return;
+  try {
+    await apiDeleteContact(id);
+    await loadAll();
+  } catch (e) {
+    alert('Error al eliminar el contacto.');
+  }
+}
+
+async function doEditContact(id, currentAlias) {
+  const newAlias = prompt('Nuevo alias:', currentAlias);
+  if (!newAlias || newAlias.trim() === currentAlias) return;
+  try {
+    await apiUpdateContact(id, newAlias.trim());
+    await loadAll();
+  } catch (e) {
+    alert('Error al actualizar el contacto.');
+  }
 }
 
 function showRefreshIndicator(visible) {

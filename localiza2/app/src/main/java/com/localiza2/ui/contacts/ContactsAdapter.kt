@@ -33,20 +33,27 @@ class ContactsAdapter(
 
         fun bind(item: ContactWithLocation) {
             val contact = item.contact
+            val loc = item.location
+
             binding.tvAlias.text = contact.alias
+
+            val ageMin: Long? = loc?.let {
+                try { Duration.between(Instant.parse(it.timestamp), Instant.now()).toMinutes() }
+                catch (_: Exception) { null }
+            }
 
             if (item.isSelf) {
                 binding.tvEmail.visibility = View.GONE
-                binding.tvStatus.text = "Mi posición"
+                binding.tvStatus.text = if (ageMin != null) formatAge(ageMin) else "Mi posición"
                 binding.btnEdit.visibility = View.GONE
                 binding.btnDelete.visibility = View.GONE
             } else {
                 binding.tvEmail.visibility = View.VISIBLE
                 binding.tvEmail.text = contact.email
                 binding.tvStatus.text = when (contact.status) {
-                    "Accepted" -> "Activo"
-                    "Pending" -> "Pendiente"
-                    else -> "Rechazado"
+                    "Accepted" -> if (ageMin != null) formatAge(ageMin) else "Sin ubicación"
+                    "Pending"  -> "Pendiente"
+                    else       -> "Rechazado"
                 }
                 binding.btnEdit.visibility = View.VISIBLE
                 binding.btnDelete.visibility = View.VISIBLE
@@ -58,15 +65,11 @@ class ContactsAdapter(
                 Glide.with(binding.root).load(contact.photoUrl).circleCrop().into(binding.ivPhoto)
             }
 
-            val loc = item.location
             if (loc != null && (item.isSelf || contact.status == "Accepted")) {
-                val ageMin = try {
-                    Duration.between(Instant.parse(loc.timestamp), Instant.now()).toMinutes()
-                } catch (_: Exception) { Long.MAX_VALUE }
                 val dotColor = when {
-                    ageMin < 5  -> Color.parseColor("#4CAF50")
-                    ageMin < 30 -> Color.parseColor("#FFC107")
-                    else        -> Color.parseColor("#9E9E9E")
+                    ageMin == null || ageMin >= 30 -> Color.parseColor("#9E9E9E")
+                    ageMin < 5                     -> Color.parseColor("#4CAF50")
+                    else                           -> Color.parseColor("#FFC107")
                 }
                 binding.viewFreshness.background.setTint(dotColor)
                 binding.viewFreshness.visibility = View.VISIBLE
@@ -81,7 +84,7 @@ class ContactsAdapter(
                 }
 
                 loc.batteryLevel?.let { battery ->
-                    binding.tvBattery.text = "$battery%"
+                    binding.tvBattery.text = "🔋 $battery%"
                     binding.tvBattery.visibility = View.VISIBLE
                     binding.tvBattery.setTextColor(when {
                         battery <= 15 -> Color.parseColor("#EF4444")
@@ -100,9 +103,16 @@ class ContactsAdapter(
             }
         }
 
+        private fun formatAge(ageMin: Long): String = when {
+            ageMin < 1    -> "ahora mismo"
+            ageMin < 60   -> "hace ${ageMin} min"
+            ageMin < 1440 -> "hace ${"%.0f".format(ageMin / 60.0)} h"
+            else          -> "hace más de 1 día"
+        }
+
         private fun formatDistance(meters: Float): String = when {
-            meters < 1000 -> "${meters.toInt()} met."
-            else -> "${"%.1f".format(meters / 1000)} km"
+            meters < 1000 -> "${meters.toInt()} m"
+            else          -> "${"%.1f".format(meters / 1000)} km"
         }
     }
 
