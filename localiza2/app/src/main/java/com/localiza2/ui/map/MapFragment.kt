@@ -8,6 +8,7 @@ import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.*
+import android.widget.FrameLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -64,6 +65,7 @@ class MapFragment : Fragment() {
         map.setMultiTouchControls(true)
         map.controller.setZoom(5.0)
         map.controller.setCenter(GeoPoint(40.416775, -3.703790))
+        map.setOnTouchListener { v, _ -> hideBubble(); v.performClick(); false }
 
         try {
             val myLocation = MyLocationNewOverlay(GpsMyLocationProvider(requireContext()), map)
@@ -137,41 +139,52 @@ class MapFragment : Fragment() {
     private fun hideHistoryMode() {
         binding.chipScrollView.visibility = View.VISIBLE
         binding.historyBar.visibility = View.GONE
+        hideBubble()
         clearHistoryOverlays()
     }
 
     private fun drawHistory(points: List<LocationHistoryPointDto>) {
         clearHistoryOverlays()
+        hideBubble()
         val geoPoints = points.map { GeoPoint(it.latitude, it.longitude) }
 
         val polyline = Polyline(map).apply {
             setPoints(geoPoints)
             outlinePaint.color = Color.parseColor("#2196F3")
             outlinePaint.strokeWidth = 8f
+            infoWindow = null
+            setOnClickListener { _, _, _ -> false }
         }
         map.overlays.add(polyline)
         historyOverlays.add(polyline)
 
-        if (geoPoints.isNotEmpty()) {
-            val startMarker = Marker(map).apply {
-                position = geoPoints.first()
-                title = "Inicio"
-                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                icon = createDotDrawable(Color.parseColor("#4CAF50"))
+        // Un marcador por cada punto con su tiempo relativo
+        val now = Instant.now()
+        points.forEachIndexed { index, point ->
+            val instant = runCatching { Instant.parse(point.timestamp) }.getOrNull() ?: return@forEachIndexed
+            val ageMin = Duration.between(instant, now).toMinutes()
+            val label = formatAge(ageMin)
+            val color = when (index) {
+                points.lastIndex -> Color.parseColor("#2196F3") // más reciente: azul
+                0                -> Color.parseColor("#4CAF50") // más antiguo: verde
+                else             -> Color.parseColor("#9E9E9E") // intermedios: gris
             }
-            map.overlays.add(startMarker)
-            historyOverlays.add(startMarker)
-        }
-
-        if (geoPoints.size > 1) {
-            val endMarker = Marker(map).apply {
-                position = geoPoints.last()
-                title = "Última posición"
+            val dotSize = if (index == 0 || index == points.lastIndex) 28 else 14
+            val gp = geoPoints[index]
+            val marker = Marker(map).apply {
+                position = gp
                 setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                icon = createDotDrawable(Color.parseColor("#2196F3"))
+                icon = createDotDrawable(color, dotSize)
+                infoWindow = null
+                setOnMarkerClickListener { _, mapView ->
+                    val pt = android.graphics.Point()
+                    mapView.projection.toPixels(gp, pt)
+                    showBubble(pt.x, pt.y, label)
+                    true
+                }
             }
-            map.overlays.add(endMarker)
-            historyOverlays.add(endMarker)
+            map.overlays.add(marker)
+            historyOverlays.add(marker)
         }
 
         if (geoPoints.size > 1) {
@@ -181,6 +194,34 @@ class MapFragment : Fragment() {
             map.controller.setCenter(geoPoints.first())
         }
         map.invalidate()
+    }
+
+    private fun formatAge(ageMin: Long): String = when {
+        ageMin < 1    -> "ahora mismo"
+        ageMin < 60   -> "hace $ageMin min"
+        ageMin < 1440 -> "hace ${"%.0f".format(ageMin / 60.0)} h"
+        else          -> "hace más de 1 día"
+    }
+
+    private fun showBubble(anchorX: Int, anchorY: Int, text: String) {
+        val bubble = binding.tvMarkerBubble
+        bubble.text = text
+        bubble.visibility = View.VISIBLE
+        bubble.post {
+            val dp = resources.displayMetrics.density
+            val lp = bubble.layoutParams as FrameLayout.LayoutParams
+            var x = anchorX - bubble.width / 2
+            var y = anchorY - bubble.height - (10 * dp).toInt()
+            x = x.coerceIn(0, (map.width - bubble.width).coerceAtLeast(0))
+            if (y < 0) y = anchorY + (10 * dp).toInt()
+            lp.leftMargin = x
+            lp.topMargin = y
+            bubble.layoutParams = lp
+        }
+    }
+
+    private fun hideBubble() {
+        if (_binding != null) binding.tvMarkerBubble.visibility = View.GONE
     }
 
     private fun clearHistoryOverlays() {
@@ -246,8 +287,8 @@ class MapFragment : Fragment() {
         return BitmapDrawable(resources, bitmap)
     }
 
-    private fun createDotDrawable(color: Int): BitmapDrawable {
-        val size = (28 * resources.displayMetrics.density).toInt()
+    private fun createDotDrawable(color: Int, sizeDp: Int = 28): BitmapDrawable {
+        val size = (sizeDp * resources.displayMetrics.density).toInt()
         val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
         Paint(Paint.ANTI_ALIAS_FLAG).apply { this.color = color }.also {

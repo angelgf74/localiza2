@@ -57,6 +57,7 @@ class ContactHistoryBottomSheet : BottomSheetDialogFragment() {
             setTileSource(TileSourceFactory.MAPNIK)
             setMultiTouchControls(true)
             controller.setZoom(13.0)
+            setOnTouchListener { v, _ -> hideBubble(); v.performClick(); false }
         }
 
         binding.btnLoadMore.setOnClickListener {
@@ -100,6 +101,28 @@ class ContactHistoryBottomSheet : BottomSheetDialogFragment() {
             }
     }
 
+    private fun showBubble(anchorX: Int, anchorY: Int, text: String) {
+        val bubble = binding.tvMarkerBubble
+        bubble.text = text
+        bubble.visibility = View.VISIBLE
+        bubble.post {
+            val dp = resources.displayMetrics.density
+            val lp = bubble.layoutParams as android.widget.FrameLayout.LayoutParams
+            var x = anchorX - bubble.width / 2
+            var y = anchorY - bubble.height - (10 * dp).toInt()
+            // Mantener dentro de los límites del mapa
+            x = x.coerceIn(0, (binding.mapHistory.width - bubble.width).coerceAtLeast(0))
+            if (y < 0) y = anchorY + (10 * dp).toInt()
+            lp.leftMargin = x
+            lp.topMargin = y
+            bubble.layoutParams = lp
+        }
+    }
+
+    private fun hideBubble() {
+        binding.tvMarkerBubble.visibility = View.GONE
+    }
+
     private fun drawRoute(points: List<LocationHistoryPointDto>) {
         val geoPoints = points.map { GeoPoint(it.latitude, it.longitude) }
         val map = binding.mapHistory
@@ -128,9 +151,15 @@ class ContactHistoryBottomSheet : BottomSheetDialogFragment() {
             val dotSize = if (index == 0 || index == points.lastIndex) 28 else 14
             val marker = Marker(map).apply {
                 position = geoPoints[index]
-                title = label
                 setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
                 icon = createDotDrawable(color, dotSize)
+                infoWindow = null
+                setOnMarkerClickListener { _, mapView ->
+                    val pt = android.graphics.Point()
+                    mapView.projection.toPixels(geoPoints[index], pt)
+                    showBubble(pt.x, pt.y, label)
+                    true
+                }
             }
             map.overlays.add(marker)
         }

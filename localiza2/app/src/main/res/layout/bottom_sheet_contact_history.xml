@@ -51,10 +51,31 @@
     </LinearLayout>
 
     <!-- Mapa con la ruta -->
-    <org.osmdroid.views.MapView
-        android:id="@+id/mapHistory"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="280dp" />
+        android:layout_height="280dp">
+
+        <org.osmdroid.views.MapView
+            android:id="@+id/mapHistory"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <!-- Bocadillo de tiempo relativo al pulsar un punto -->
+        <TextView
+            android:id="@+id/tvMarkerBubble"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
+            android:background="@drawable/bg_marker_bubble"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="6dp"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:elevation="8dp"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
     <!-- Info debajo del mapa -->
     <LinearLayout

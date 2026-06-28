@@ -9,6 +9,21 @@
         android:layout_height="match_parent"
         android:clickable="true" />
 
+    <!-- Bocadillo de tiempo relativo al pulsar un punto del historial -->
+    <TextView
+        android:id="@+id/tvMarkerBubble"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:background="@drawable/bg_marker_bubble"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="6dp"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:elevation="@dimen/elevation_lg"
+        android:visibility="gone" />
+
     <HorizontalScrollView
         android:id="@+id/chipScrollView"
         android:layout_width="match_parent"
