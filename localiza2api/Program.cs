@@ -59,8 +59,21 @@ var webUrl     = builder.Configuration["App:WebUrl"]
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
-        if (!string.IsNullOrEmpty(webUrl))
-            policy.WithOrigins(webUrl).AllowAnyMethod().AllowAnyHeader();
+        var origins = string.IsNullOrEmpty(webUrl)
+            ? []
+            : webUrl.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (builder.Environment.IsDevelopment())
+        {
+            policy.SetIsOriginAllowed(origin =>
+            {
+                var host = new Uri(origin).Host;
+                return host is "localhost" or "127.0.0.1" ||
+                       (origins.Length > 0 && origins.Contains(origin));
+            }).AllowAnyMethod().AllowAnyHeader();
+        }
+        else if (origins.Length > 0)
+            policy.WithOrigins(origins).AllowAnyMethod().AllowAnyHeader();
         else
             policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
     }));
