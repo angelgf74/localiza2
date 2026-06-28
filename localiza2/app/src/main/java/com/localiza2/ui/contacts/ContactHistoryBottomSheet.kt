@@ -21,6 +21,7 @@ import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
+import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -104,34 +105,34 @@ class ContactHistoryBottomSheet : BottomSheetDialogFragment() {
         val map = binding.mapHistory
         map.overlays.clear()
 
-        // Polyline
+        // Polyline (sin click para evitar popup vacío)
         val polyline = Polyline(map).apply {
             setPoints(geoPoints)
             outlinePaint.color = Color.parseColor("#2196F3")
             outlinePaint.strokeWidth = 8f
+            setOnClickListener { _, _, _ -> false }
         }
         map.overlays.add(polyline)
 
-        // Start marker (green)
-        if (geoPoints.isNotEmpty()) {
-            val startMarker = Marker(map).apply {
-                position = geoPoints.first()
-                title = "Inicio"
-                setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                icon = createDotDrawable(Color.parseColor("#4CAF50"))
+        // Marcador por cada punto con tiempo relativo
+        val now = Instant.now()
+        points.forEachIndexed { index, point ->
+            val instant = runCatching { Instant.parse(point.timestamp) }.getOrNull() ?: return@forEachIndexed
+            val ageMin = Duration.between(instant, now).toMinutes()
+            val label = formatAge(ageMin)
+            val color = when (index) {
+                points.lastIndex -> Color.parseColor("#2196F3") // más reciente: azul
+                0 -> Color.parseColor("#4CAF50")               // más antiguo: verde
+                else -> Color.parseColor("#9E9E9E")            // intermedios: gris
             }
-            map.overlays.add(startMarker)
-        }
-
-        // Latest marker (blue)
-        if (geoPoints.size > 1) {
-            val endMarker = Marker(map).apply {
-                position = geoPoints.last()
-                title = "Última posición"
+            val dotSize = if (index == 0 || index == points.lastIndex) 28 else 14
+            val marker = Marker(map).apply {
+                position = geoPoints[index]
+                title = label
                 setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
-                icon = createDotDrawable(Color.parseColor("#2196F3"))
+                icon = createDotDrawable(color, dotSize)
             }
-            map.overlays.add(endMarker)
+            map.overlays.add(marker)
         }
 
         // Fit map to route
@@ -150,8 +151,15 @@ class ContactHistoryBottomSheet : BottomSheetDialogFragment() {
         binding.tvHistoryInfo.text = "${points.size} posiciones  ·  $first → $last"
     }
 
-    private fun createDotDrawable(color: Int): android.graphics.drawable.BitmapDrawable {
-        val size = (28 * resources.displayMetrics.density).toInt()
+    private fun formatAge(ageMin: Long): String = when {
+        ageMin < 1    -> "ahora mismo"
+        ageMin < 60   -> "hace $ageMin min"
+        ageMin < 1440 -> "hace ${"%.0f".format(ageMin / 60.0)} h"
+        else          -> "hace más de 1 día"
+    }
+
+    private fun createDotDrawable(color: Int, sizeDp: Int = 28): android.graphics.drawable.BitmapDrawable {
+        val size = (sizeDp * resources.displayMetrics.density).toInt()
         val bmp = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
         val canvas = android.graphics.Canvas(bmp)
         val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply { this.color = color }
