@@ -3,29 +3,32 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardElevation="2dp"
-    app:cardCornerRadius="12dp">
+    android:layout_marginHorizontal="@dimen/spacing_sm"
+    android:layout_marginVertical="@dimen/spacing_xs"
+    app:cardElevation="@dimen/elevation_sm"
+    app:cardCornerRadius="@dimen/radius_lg"
+    app:strokeWidth="1dp"
+    app:strokeColor="@color/bg_surface_2">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp"
+        android:padding="@dimen/spacing_md"
         android:gravity="center_vertical">
 
-        <!-- Indicador de frescura (dot) -->
+        <!-- Indicador de frescura -->
         <View
             android:id="@+id/viewFreshness"
-            android:layout_width="10dp"
-            android:layout_height="10dp"
-            android:layout_marginEnd="10dp"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginEnd="@dimen/spacing_sm"
             android:background="@drawable/circle_freshness" />
 
         <ImageView
             android:id="@+id/ivPhoto"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="@dimen/avatar_size_lg"
+            android:layout_height="@dimen/avatar_size_lg"
             android:src="@android:drawable/ic_menu_myplaces"
             android:scaleType="centerCrop" />
 
@@ -34,7 +37,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="@dimen/spacing_md"
             android:orientation="vertical">
 
             <TextView
@@ -42,14 +45,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:textSize="16sp" />
+                android:textSize="@dimen/text_size_title"
+                android:textColor="?attr/colorOnSurface" />
 
             <TextView
                 android:id="@+id/tvEmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="13sp"
-                android:alpha="0.7" />
+                android:textSize="@dimen/text_size_sm"
+                android:textColor="@color/text_muted" />
 
             <!-- Fila: estado + distancia + batería -->
             <LinearLayout
@@ -57,20 +61,21 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginTop="2dp">
+                android:layout_marginTop="@dimen/spacing_xs">
 
                 <TextView
                     android:id="@+id/tvStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="12sp" />
+                    android:textSize="@dimen/text_size_sm"
+                    android:textColor="@color/text_muted" />
 
                 <TextView
                     android:id="@+id/tvDistance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:textSize="12sp"
+                    android:layout_marginStart="@dimen/spacing_sm"
+                    android:textSize="@dimen/text_size_sm"
                     android:textColor="?attr/colorPrimary"
                     android:visibility="gone" />
 
@@ -78,9 +83,9 @@
                     android:id="@+id/tvBattery"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:textSize="12sp"
-                    android:alpha="0.7"
+                    android:layout_marginStart="@dimen/spacing_sm"
+                    android:textSize="@dimen/text_size_sm"
+                    android:textColor="@color/text_muted"
                     android:visibility="gone" />
 
             </LinearLayout>
@@ -90,28 +95,31 @@
         <!-- Botones de acción -->
         <ImageButton
             android:id="@+id/btnHistory"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/icon_size_xl"
+            android:layout_height="@dimen/icon_size_xl"
             android:src="@android:drawable/ic_menu_recent_history"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:tint="?attr/colorOnSurfaceVariant"
             android:contentDescription="Ver ruta"
             android:visibility="gone" />
 
         <ImageButton
             android:id="@+id/btnEdit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="@dimen/icon_size_xl"
+            android:layout_height="@dimen/icon_size_xl"
             android:src="@android:drawable/ic_menu_edit"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:tint="?attr/colorOnSurfaceVariant"
             android:contentDescription="Editar" />
 
         <ImageButton
             android:id="@+id/btnDelete"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
+            android:layout_width="@dimen/icon_size_xl"
+            android:layout_height="@dimen/icon_size_xl"
+            android:layout_marginStart="@dimen/spacing_xs"
             android:src="@android:drawable/ic_menu_delete"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:tint="@color/danger"
             android:contentDescription="Eliminar" />
 
     </LinearLayout>

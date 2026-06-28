@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:orientation="vertical"
-        android:padding="32dp">
+        android:padding="@dimen/spacing_2xl">
 
         <!-- FORMULARIO -->
         <LinearLayout
@@ -22,10 +22,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginBottom="32dp"
+                android:layout_marginBottom="@dimen/spacing_2xl"
                 android:text="Crear cuenta"
                 android:textSize="28sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
@@ -42,7 +43,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/spacing_md"
                 android:hint="Correo electrónico"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
                 <com.google.android.material.textfield.TextInputEditText
@@ -55,7 +56,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/spacing_md"
                 android:hint="Contraseña"
                 app:passwordToggleEnabled="true"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
@@ -69,7 +70,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/spacing_md"
                 android:hint="Confirmar contraseña"
                 app:passwordToggleEnabled="true"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
@@ -85,21 +86,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/spacing_lg"
                 android:visibility="gone" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnRegister"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="@dimen/spacing_xl"
                 android:text="Registrarme" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGoLogin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="@dimen/spacing_sm"
                 android:text="¿Ya tienes cuenta? Inicia sesión"
                 style="@style/Widget.Material3.Button.TextButton" />
 
@@ -118,18 +119,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="@dimen/spacing_lg"
                 android:text="Revisa tu correo"
                 android:textSize="24sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface" />
 
             <TextView
                 android:id="@+id/tvPendingDesc"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:layout_marginBottom="32dp"
-                android:textSize="15sp"
+                android:layout_marginBottom="@dimen/spacing_2xl"
+                android:textSize="@dimen/text_size_subtitle"
+                android:textColor="?attr/colorOnSurface"
                 android:lineSpacingMultiplier="1.4" />
 
             <com.google.android.material.button.MaterialButton
@@ -142,7 +145,7 @@
                 android:id="@+id/btnBackToLogin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="@dimen/spacing_sm"
                 android:text="Volver al inicio de sesión"
                 style="@style/Widget.Material3.Button.TextButton" />
 

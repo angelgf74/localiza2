@@ -14,8 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:background="#80000000"
-        android:padding="8dp">
+        android:background="#CC0f172a"
+        android:padding="@dimen/spacing_sm">
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/chipGroup"
@@ -37,10 +37,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="#FFFFFF"
-        android:elevation="4dp"
+        android:background="@color/bg_surface"
+        android:elevation="@dimen/elevation_md"
         android:orientation="vertical"
-        android:padding="16dp"
+        android:padding="@dimen/spacing_lg"
         android:visibility="gone">
 
         <LinearLayout
@@ -55,8 +55,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Ruta del contacto"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="@dimen/text_size_title"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface" />
 
             <ImageButton
                 android:id="@+id/btnCloseHistory"
@@ -64,16 +65,17 @@
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Cerrar historial"
-                android:src="@android:drawable/ic_menu_close_clear_cancel" />
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:tint="?attr/colorOnSurface" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/tvHistoryInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:textColor="#757575"
-            android:textSize="13sp" />
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:textColor="@color/text_muted"
+            android:textSize="@dimen/text_size_sm" />
 
     </LinearLayout>
 

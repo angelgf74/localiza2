@@ -4,21 +4,19 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingBottom="24dp">
+    android:paddingBottom="@dimen/spacing_xl">
 
-    <!-- Título -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="20dp"
-        android:paddingTop="20dp"
-        android:paddingBottom="12dp"
+        android:paddingHorizontal="@dimen/spacing_lg"
+        android:paddingTop="@dimen/spacing_lg"
+        android:paddingBottom="@dimen/spacing_md"
         android:text="Emparejar contacto"
-        android:textSize="17sp"
+        android:textSize="@dimen/text_size_headline"
         android:textStyle="bold"
         android:textColor="?attr/colorOnSurface" />
 
-    <!-- Tabs -->
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
@@ -35,16 +33,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingHorizontal="20dp"
-        android:paddingTop="16dp">
+        android:paddingHorizontal="@dimen/spacing_lg"
+        android:paddingTop="@dimen/spacing_lg">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Muestra este código a tu contacto para que lo escanee."
-            android:textSize="13sp"
+            android:textSize="@dimen/text_size_body"
             android:textColor="?attr/colorOnSurfaceVariant"
-            android:paddingBottom="12dp" />
+            android:paddingBottom="@dimen/spacing_md" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -61,8 +59,8 @@
 
             <ProgressBar
                 android:id="@+id/progressQr"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="@dimen/avatar_size_lg"
+                android:layout_height="@dimen/avatar_size_lg"
                 android:layout_gravity="center" />
 
             <TextView
@@ -70,8 +68,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:textColor="@color/design_default_color_error"
-                android:textSize="13sp"
+                android:textColor="@color/danger"
+                android:textSize="@dimen/text_size_body"
                 android:visibility="gone" />
         </FrameLayout>
 
@@ -79,8 +77,8 @@
             android:id="@+id/tvQrExpiry"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="8dp"
-            android:textSize="12sp"
+            android:paddingTop="@dimen/spacing_sm"
+            android:textSize="@dimen/text_size_sm"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:gravity="center" />
 
@@ -89,7 +87,7 @@
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/spacing_md"
             android:text="Renovar código" />
     </LinearLayout>
 
@@ -99,17 +97,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingHorizontal="20dp"
-        android:paddingTop="16dp"
+        android:paddingHorizontal="@dimen/spacing_lg"
+        android:paddingTop="@dimen/spacing_lg"
         android:visibility="gone">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Envía una invitación por correo electrónico."
-            android:textSize="13sp"
+            android:textSize="@dimen/text_size_body"
             android:textColor="?attr/colorOnSurfaceVariant"
-            android:paddingBottom="12dp" />
+            android:paddingBottom="@dimen/spacing_md" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
@@ -128,7 +126,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/spacing_sm"
             android:hint="Alias (cómo le llamarás)"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
@@ -144,15 +142,15 @@
             android:id="@+id/tvEmailResult"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:textSize="13sp"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:textSize="@dimen/text_size_body"
             android:visibility="gone" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSendInvite"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/spacing_md"
             android:text="Enviar invitación" />
     </LinearLayout>
 
