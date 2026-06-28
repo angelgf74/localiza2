@@ -33,7 +33,7 @@ android {
         }
         create("development") {
             dimension = "environment"
-            buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:5135/\"")
+            buildConfigField("String", "API_BASE_URL", "\"http://192.168.0.133:5135/\"")
         }
     }
 
