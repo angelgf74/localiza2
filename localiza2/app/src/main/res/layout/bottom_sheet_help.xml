@@ -11,15 +11,15 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:background="?attr/colorSurface"
-        android:elevation="4dp">
+        android:elevation="@dimen/elevation_md">
 
         <View
             android:layout_width="36dp"
             android:layout_height="4dp"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
-            android:background="#80888888"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:layout_marginBottom="@dimen/spacing_sm"
+            android:background="@color/bg_surface_3"
             android:backgroundTint="?attr/colorOnSurfaceVariant" />
 
         <LinearLayout
@@ -27,15 +27,14 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingBottom="14dp">
+            android:paddingHorizontal="@dimen/spacing_lg"
+            android:paddingBottom="@dimen/spacing_md">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="@dimen/icon_size_xl"
+                android:layout_height="@dimen/icon_size_xl"
                 android:src="@android:drawable/ic_menu_help"
-                android:layout_marginEnd="12dp"
+                android:layout_marginEnd="@dimen/spacing_md"
                 app:tint="?attr/colorPrimary" />
 
             <TextView
@@ -59,36 +58,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp"
-            android:paddingBottom="40dp">
+            android:padding="@dimen/spacing_lg"
+            android:paddingBottom="@dimen/spacing_2xl">
 
-            <!-- ── Qué es localiza2 ───────────────────────────── -->
-            <include layout="@layout/help_section"
-                android:id="@+id/sectionQuees" />
+            <include layout="@layout/help_section" android:id="@+id/sectionQuees" />
+            <include layout="@layout/help_section" android:id="@+id/sectionInfo" />
+            <include layout="@layout/help_section" android:id="@+id/sectionPair" />
+            <include layout="@layout/help_section" android:id="@+id/sectionWeb" />
+            <include layout="@layout/help_section" android:id="@+id/sectionPrivacy" />
 
-            <!-- ── Información que se maneja ─────────────────── -->
-            <include layout="@layout/help_section"
-                android:id="@+id/sectionInfo" />
-
-            <!-- ── Sistema de emparejamiento ─────────────────── -->
-            <include layout="@layout/help_section"
-                android:id="@+id/sectionPair" />
-
-            <!-- ── Aplicación web ─────────────────────────────── -->
-            <include layout="@layout/help_section"
-                android:id="@+id/sectionWeb" />
-
-            <!-- ── Privacidad ─────────────────────────────────── -->
-            <include layout="@layout/help_section"
-                android:id="@+id/sectionPrivacy" />
-
-            <!-- ── Versión ────────────────────────────────────── -->
             <TextView
                 android:id="@+id/tvVersion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textSize="12sp"
+                android:layout_marginTop="@dimen/spacing_sm"
+                android:textSize="@dimen/text_size_sm"
                 android:textColor="?attr/colorOnSurfaceVariant"
                 android:gravity="center" />
 

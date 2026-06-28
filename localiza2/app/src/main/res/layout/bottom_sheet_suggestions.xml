@@ -4,26 +4,25 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:paddingBottom="32dp">
+    android:padding="@dimen/spacing_xl"
+    android:paddingBottom="@dimen/spacing_2xl">
 
-    <!-- Título -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Enviar sugerencia"
-        android:textSize="18sp"
+        android:textSize="@dimen/text_size_headline"
         android:textStyle="bold"
-        android:layout_marginBottom="20dp" />
+        android:textColor="?attr/colorOnSurface"
+        android:layout_marginBottom="@dimen/spacing_lg" />
 
-    <!-- Tipo -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Tipo"
-        android:textSize="13sp"
-        android:textColor="?android:attr/textColorSecondary"
-        android:layout_marginBottom="8dp" />
+        android:textSize="@dimen/text_size_sm"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:layout_marginBottom="@dimen/spacing_sm" />
 
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chipGroupTipo"
@@ -31,7 +30,7 @@
         android:layout_height="wrap_content"
         app:singleSelection="true"
         app:selectionRequired="true"
-        android:layout_marginBottom="20dp">
+        android:layout_marginBottom="@dimen/spacing_lg">
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipMejora"
@@ -57,14 +56,13 @@
 
     </com.google.android.material.chip.ChipGroup>
 
-    <!-- Texto de la sugerencia -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilTexto"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Cuéntanos tu sugerencia…"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="@dimen/spacing_lg">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etTexto"
@@ -78,14 +76,13 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Email -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilEmail"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Tu email"
-        android:layout_marginBottom="24dp">
+        android:hint="Tu email (opcional)"
+        android:layout_marginBottom="@dimen/spacing_xl">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etEmail"
@@ -96,7 +93,6 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Botón enviar -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnEnviar"
         android:layout_width="match_parent"
