@@ -4,9 +4,9 @@ set -euo pipefail
 GRADLE_FILE="app/build.gradle.kts"
 GRADLEW="./gradlew"
 
-# Leer versión actual
-VERSION_CODE=$(grep 'versionCode' "$GRADLE_FILE" | grep -oP '\d+')
-VERSION_NAME=$(grep 'versionName' "$GRADLE_FILE" | grep -oP '"\K[^"]+')
+# Leer versión actual (sin grep -P: no es portable y falla con algunos locales)
+VERSION_CODE=$(grep 'versionCode' "$GRADLE_FILE" | grep -oE '[0-9]+')
+VERSION_NAME=$(grep 'versionName' "$GRADLE_FILE" | sed -E 's/.*"([^"]+)".*/\1/')
 
 # Calcular nueva versión
 NEW_VERSION_CODE=$((VERSION_CODE + 1))
@@ -21,12 +21,17 @@ echo ""
 sed -i "s/versionCode = $VERSION_CODE/versionCode = $NEW_VERSION_CODE/" "$GRADLE_FILE"
 sed -i "s/versionName = \"$VERSION_NAME\"/versionName = \"$NEW_VERSION_NAME\"/" "$GRADLE_FILE"
 
-echo "Generando AAB release..."
+echo "Generando AAB production release..."
 echo ""
 
-$GRADLEW bundleRelease
+$GRADLEW bundleProductionRelease
 
-AAB_PATH="app/build/outputs/bundle/release/app-release.aab"
+AAB_PATH="app/build/outputs/bundle/productionRelease/app-production-release.aab"
+
+if [ ! -f "$AAB_PATH" ]; then
+  echo "ERROR: no se generó el AAB en $AAB_PATH"
+  exit 1
+fi
 
 echo ""
 echo "BUILD OK"
