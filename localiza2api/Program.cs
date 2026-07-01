@@ -4,6 +4,7 @@ using localiza2api.Data;
 using localiza2api.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -31,6 +32,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// La API corre detrás de Nginx: usa X-Forwarded-For para obtener la IP real
+// del cliente (necesario para que el rate limiting sea por-IP y no global).
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    // Solo Nginx (localhost) puede alcanzar Kestrel, así que confiamos en la cabecera.
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
@@ -45,7 +56,7 @@ builder.Services.AddRateLimiter(options =>
             partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
             factory: _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 10,
+                PermitLimit = 20,
                 Window      = TimeSpan.FromMinutes(1),
                 QueueLimit  = 0
             }));
@@ -102,6 +113,9 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
 }
+
+// Debe ir antes de cualquier middleware que use la IP del cliente (rate limiter).
+app.UseForwardedHeaders();
 
 app.MapOpenApi();
 app.MapScalarApiReference(opt =>

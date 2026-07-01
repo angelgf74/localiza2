@@ -243,6 +243,8 @@ public class AuthController(AppDbContext db, EmailService emailService, TokenSer
     {
         var user = await db.Users.FindAsync(CurrentUserId);
         if (user is null) return NotFound();
+        if (user.Email == "demo@localiza2.app")
+            return Forbid();
 
         db.Users.Remove(user);
         await db.SaveChangesAsync();
