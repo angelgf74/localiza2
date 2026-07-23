@@ -13,14 +13,14 @@ val keystoreProperties = Properties().apply {
 
 android {
     namespace = "com.localiza2"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "es.angelgf.localiza2"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 22
-        versionName = "1.21"
+        targetSdk = 37
+        versionCode = 25
+        versionName = "1.24"
 
         buildConfigField("String", "API_BASE_URL", "\"https://localiza2-api.angelgf.com.es/\"")
     }
