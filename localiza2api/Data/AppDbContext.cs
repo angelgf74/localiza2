@@ -23,6 +23,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasIndex(u => u.PairingCode).IsUnique().HasFilter("\"PairingCode\" IS NOT NULL");
             e.Property(u => u.PasswordResetToken).HasMaxLength(64);
             e.HasIndex(u => u.PasswordResetToken).IsUnique().HasFilter("\"PasswordResetToken\" IS NOT NULL");
+            e.Property(u => u.Role).HasConversion<string>().HasMaxLength(20);
         });
 
         modelBuilder.Entity<Contact>(e =>

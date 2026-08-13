@@ -112,6 +112,14 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
+
+    // Siembra idempotente de la cuenta demo (+ contacto y ubicaciones) para la
+    // revisión de Google Play. Solo actúa si Demo:Password está configurado.
+    await DemoSeeder.SeedAsync(db, app.Configuration);
+
+    // Siembra idempotente de la cuenta de super administrador. Solo actúa si
+    // SuperAdmin:Email y SuperAdmin:Password están configurados.
+    await SuperAdminSeeder.SeedAsync(db, app.Configuration);
 }
 
 // Debe ir antes de cualquier middleware que use la IP del cliente (rate limiter).

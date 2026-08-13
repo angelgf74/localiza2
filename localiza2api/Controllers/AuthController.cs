@@ -139,8 +139,8 @@ public class AuthController(AppDbContext db, EmailService emailService, TokenSer
         if (user is null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Unauthorized(new { message = "Credenciales incorrectas." });
 
-        var token = tokenService.GenerateJwt(user.Id, user.Email);
-        return Ok(new LoginResponseDto(token, user.Id, user.Name, user.Email));
+        var token = tokenService.GenerateJwt(user.Id, user.Email, user.Role);
+        return Ok(new LoginResponseDto(token, user.Id, user.Name, user.Email, user.Role.ToString()));
     }
 
     [HttpPost("resend-confirmation")]
@@ -243,7 +243,7 @@ public class AuthController(AppDbContext db, EmailService emailService, TokenSer
     {
         var user = await db.Users.FindAsync(CurrentUserId);
         if (user is null) return NotFound();
-        if (user.Email == "demo@localiza2.app")
+        if (user.Email == "demo@localiza2.app" || user.Role == UserRole.SuperAdmin)
             return Forbid();
 
         db.Users.Remove(user);

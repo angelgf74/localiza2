@@ -123,6 +123,11 @@ async function doLogin(email, password) {
     state.userName = data.name || data.email;
     sessionStorage.setItem('lz2_token', data.token);
     sessionStorage.setItem('lz2_name',  state.userName);
+    sessionStorage.setItem('lz2_role',  data.role || 'User');
+    if (data.role === 'SuperAdmin') {
+      window.location.href = 'admin.html';
+      return;
+    }
     showApp();
   } catch (err) {
     errEl.textContent = (err.message.includes('401') || err.message.includes('400'))
@@ -218,6 +223,7 @@ function doLogout() {
                           userPos: null, selectedId: null, sharingEnabled: true });
   sessionStorage.removeItem('lz2_token');
   sessionStorage.removeItem('lz2_name');
+  sessionStorage.removeItem('lz2_role');
   stopAutoRefresh();
   destroyMap();
   showLogin();
@@ -944,4 +950,9 @@ document.addEventListener('visibilitychange', () => {
 // Arranque
 // ════════════════════════════════════════════════════════════════════════════
 
-if (state.token) showApp(); else showLogin();
+if (state.token) {
+  if (sessionStorage.getItem('lz2_role') === 'SuperAdmin') window.location.href = 'admin.html';
+  else showApp();
+} else {
+  showLogin();
+}

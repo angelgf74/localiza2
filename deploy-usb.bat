@@ -14,7 +14,8 @@ set "APP_ID=es.angelgf.localiza2"
 
 if /I "%VARIANT%"=="debug" (
     set "GRADLE_TASK=assembleDebug"
-    set "APK_PATH=%PROJECT_DIR%\app\build\outputs\apk\debug\app-debug.apk"
+    rem set "APK_PATH=%PROJECT_DIR%\app\build\outputs\apk\debug\app-debug.apk"
+    set "APK_PATH=%PROJECT_DIR%\app\build\outputs\apk\development\debug\app-development-debug.apk
 ) else (
     set "GRADLE_TASK=assembleRelease"
     set "APK_PATH=%PROJECT_DIR%\app\build\outputs\apk\release\app-release.apk"

@@ -1,20 +1,22 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using localiza2api.Models;
 using Microsoft.IdentityModel.Tokens;
 
 namespace localiza2api.Services;
 
 public class TokenService(IConfiguration config)
 {
-    public string GenerateJwt(int userId, string email)
+    public string GenerateJwt(int userId, string email, UserRole role)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim(ClaimTypes.Email, email)
+            new Claim(ClaimTypes.Email, email),
+            new Claim(ClaimTypes.Role, role.ToString())
         };
         var token = new JwtSecurityToken(
             issuer: config["Jwt:Issuer"],

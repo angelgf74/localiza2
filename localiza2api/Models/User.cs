@@ -12,6 +12,7 @@ public class User
     public string? PasswordResetToken { get; set; }
     public DateTime? PasswordResetExpiry { get; set; }
     public bool SharingEnabled { get; set; } = true;
+    public UserRole Role { get; set; } = UserRole.User;
 
     public ICollection<Contact> Contacts { get; set; } = [];
     public ICollection<UserLocation> Locations { get; set; } = [];

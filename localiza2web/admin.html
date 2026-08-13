@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>localiza2 · Administración</title>
+  <link rel="icon" type="image/png" href="https://shared.angelgf.com.es/localiza2/icon_512.png" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="style.css?v=20260702" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <span class="nav-brand">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+      </svg>
+      localiza2 · Admin
+    </span>
+    <div class="nav-center">
+      <span id="nav-username"></span>
+    </div>
+    <div class="nav-actions">
+      <button id="logout-btn" class="btn-outline">Salir</button>
+    </div>
+  </nav>
+
+  <div class="layout">
+
+    <!-- Sidebar de usuarios -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span>Usuarios</span>
+        <span id="user-count" class="badge">0</span>
+      </div>
+      <ul id="admin-user-list" class="contact-list">
+        <li class="contact-empty">Cargando usuarios…</li>
+      </ul>
+    </aside>
+
+    <!-- Panel de detalle -->
+    <div class="admin-detail">
+      <div id="admin-empty-state" class="admin-empty-state">
+        Selecciona un usuario para ver su historial de ubicaciones.
+      </div>
+
+      <div id="admin-user-panel" class="admin-user-panel hidden">
+        <div class="admin-detail-header">
+          <h2 id="admin-detail-name"></h2>
+          <div class="modal-tabs admin-view-tabs">
+            <button id="admin-tab-table" class="tab-btn active" data-view="table">Tabla</button>
+            <button id="admin-tab-map"   class="tab-btn" data-view="map">Mapa</button>
+          </div>
+        </div>
+
+        <div id="admin-view-table" class="admin-view">
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr><th>Fecha/hora</th><th>Latitud</th><th>Longitud</th><th>Precisión</th><th>Batería</th></tr>
+              </thead>
+              <tbody id="admin-history-tbody"></tbody>
+            </table>
+            <div id="admin-history-empty" class="contact-empty hidden">Sin ubicaciones registradas.</div>
+          </div>
+          <button id="admin-load-more-btn" class="btn-outline admin-load-more hidden">Cargar más antiguos</button>
+        </div>
+
+        <div id="admin-view-map" class="admin-view hidden">
+          <div id="admin-map"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Toast de notificaciones ───────────────────────────────────────── -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="admin.js?v=20260702"></script>
+</body>
+</html>
