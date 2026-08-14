@@ -32,8 +32,8 @@ _Lo próximo a abordar. Idealmente una sola feature "en curso" a la vez._
 _Detectadas en análisis de seguridad/calidad de 2026-08-14. Marcar `[x]` al implementar._
 
 - [x] **Validar longitud mínima de password en `Register`** — `AuthController.cs`. `ResetPassword` exige 8 caracteres, `Register` no valida nada; password vacío o de 1 carácter pasa hoy. Fix trivial.
-- [ ] **Rate limiting en `ContactsController.AcceptPairing`** — prueba de `PairingCode` sin límite de tasa (solo `AuthController` lleva `[EnableRateLimiting("auth")]`).
-- [ ] **Rate limiting en `LocationController`** — `POST /api/location` y lecturas sin límite de tasa.
+- [x] **Rate limiting en `ContactsController.AcceptPairing`** — prueba de `PairingCode` sin límite de tasa (solo `AuthController` lleva `[EnableRateLimiting("auth")]`). Aplicado también a `pair/info/{token}` y `accept/{token}` (misma superficie de token-guessing).
+- [x] **Rate limiting en `LocationController`** — `POST /api/location` y lecturas sin límite de tasa. Nueva política `location` (60/min por IP) a nivel de clase.
 - [ ] **Revocación de JWT tras cambio de contraseña** — `ResetPassword` cambia `PasswordHash` pero no invalida tokens ya emitidos; uno robado sigue válido hasta 30 días. Requiere refresh token o blacklist (relacionado con mejora #5 de `mejoras.md`).
 - [ ] **Tests para `PruneLocationsService`** — lógica de buckets (60s/300s/1800s) sin cobertura; cero tests en todo el proyecto (.NET/Android/web).
 - [ ] **Tests para emparejamiento bilateral de contactos** — creación de las 2 filas `Contact` al aceptar invitación/QR, sin cobertura.

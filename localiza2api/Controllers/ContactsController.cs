@@ -5,6 +5,7 @@ using localiza2api.Models;
 using localiza2api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace localiza2api.Controllers;
@@ -74,6 +75,7 @@ public class ContactsController(AppDbContext db, EmailService emailService) : Co
 
     [HttpGet("accept/{token}")]
     [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> AcceptInvitation(string token)
     {
         var invitation = await db.ContactInvitations
@@ -191,6 +193,7 @@ public class ContactsController(AppDbContext db, EmailService emailService) : Co
 
     [HttpGet("pair/info/{token}")]
     [AllowAnonymous]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> GetPairingInfo(string token)
     {
         // Buscar por QR code
@@ -210,6 +213,7 @@ public class ContactsController(AppDbContext db, EmailService emailService) : Co
     }
 
     [HttpPost("pair/accept")]
+    [EnableRateLimiting("auth")]
     public async Task<IActionResult> AcceptPairing([FromBody] AcceptPairingDto dto)
     {
         var me = await db.Users.FindAsync(CurrentUserId);

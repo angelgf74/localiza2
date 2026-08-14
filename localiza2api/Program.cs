@@ -60,6 +60,17 @@ builder.Services.AddRateLimiter(options =>
                 Window      = TimeSpan.FromMinutes(1),
                 QueueLimit  = 0
             }));
+    // Endpoints de ubicación: polling web (cada 30s) + envíos Android (cada 60-300s)
+    // desde varios usuarios pueden compartir IP (misma red doméstica/CGNAT).
+    options.AddPolicy("location", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 60,
+                Window      = TimeSpan.FromMinutes(1),
+                QueueLimit  = 0
+            }));
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 

@@ -5,6 +5,7 @@ using localiza2api.DTOs;
 using localiza2api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
@@ -13,6 +14,7 @@ namespace localiza2api.Controllers;
 [ApiController]
 [Route("api/location")]
 [Authorize]
+[EnableRateLimiting("location")]
 public class LocationController(AppDbContext db, IConfiguration config) : ControllerBase
 {
     private int CurrentUserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
