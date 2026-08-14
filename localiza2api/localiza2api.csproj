@@ -7,6 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="localiza2api.Tests" />
+  </ItemGroup>
+
+  <!-- localiza2api.Tests vive en un subdirectorio; sin esto, el globbing por defecto del SDK
+       lo compilaría también dentro de este proyecto (que no referencia xunit). -->
+  <ItemGroup>
+    <Compile Remove="localiza2api.Tests\**\*.cs" />
+    <Content Remove="localiza2api.Tests\**\*" />
+    <None Remove="localiza2api.Tests\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.4" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.4" />

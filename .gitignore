@@ -1,6 +1,6 @@
 # ─── .NET API ─────────────────────────────────────────────────────────────────
-localiza2api/bin/
-localiza2api/obj/
+localiza2api/**/bin/
+localiza2api/**/obj/
 localiza2api/publish/
 **/.vs/
 **/*.user

@@ -16,7 +16,7 @@ public class PruneLocationsService(IServiceScopeFactory scopeFactory, ILogger<Pr
         }
     }
 
-    private async Task PruneAsync(CancellationToken ct)
+    internal async Task PruneAsync(CancellationToken ct)
     {
         try
         {
