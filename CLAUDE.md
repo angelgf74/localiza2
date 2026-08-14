@@ -2,6 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Rules
+
+Detailed per-area rules live in `.claude/rules/` and are imported here:
+
+@.claude/rules/secrets.md
+@.claude/rules/git.md
+@.claude/rules/android.md
+@.claude/rules/api.md
+@.claude/rules/database.md
+@.claude/rules/web.md
+@.claude/rules/deploy.md
+
 ## Project Overview
 
 **Localiza2** is a real-time location-sharing app with three components:
@@ -48,7 +60,7 @@ Web Dashboard (HTML/JS)
 ```
 
 ### Location Retention Policy
-The API auto-prunes GPS history on insert:
+`PruneLocationsService` (a `BackgroundService`) prunes GPS history hourly — not on insert:
 - Last 3h: 1 record/min (max 180)
 - 3–24h: 1 record/5min (max 252)
 - 1–30 days: 1 record/30min (max 1440)

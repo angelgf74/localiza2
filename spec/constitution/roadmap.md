@@ -27,6 +27,19 @@ _Lo próximo a abordar. Idealmente una sola feature "en curso" a la vez._
 
 15. **015 · Notificaciones push** — Alertas cuando contacto se conecta/desconecta, bajo nivel de batería.
 
+## Correcciones pendientes 🔧
+
+_Detectadas en análisis de seguridad/calidad de 2026-08-14. Marcar `[x]` al implementar._
+
+- [x] **Validar longitud mínima de password en `Register`** — `AuthController.cs`. `ResetPassword` exige 8 caracteres, `Register` no valida nada; password vacío o de 1 carácter pasa hoy. Fix trivial.
+- [ ] **Rate limiting en `ContactsController.AcceptPairing`** — prueba de `PairingCode` sin límite de tasa (solo `AuthController` lleva `[EnableRateLimiting("auth")]`).
+- [ ] **Rate limiting en `LocationController`** — `POST /api/location` y lecturas sin límite de tasa.
+- [ ] **Revocación de JWT tras cambio de contraseña** — `ResetPassword` cambia `PasswordHash` pero no invalida tokens ya emitidos; uno robado sigue válido hasta 30 días. Requiere refresh token o blacklist (relacionado con mejora #5 de `mejoras.md`).
+- [ ] **Tests para `PruneLocationsService`** — lógica de buckets (60s/300s/1800s) sin cobertura; cero tests en todo el proyecto (.NET/Android/web).
+- [ ] **Tests para emparejamiento bilateral de contactos** — creación de las 2 filas `Contact` al aceptar invitación/QR, sin cobertura.
+- [ ] **Corregir `CLAUDE.md`: almacenamiento de token** — dice "Android DataStore / web localStorage"; código real usa `EncryptedSharedPreferences` (Android) y `sessionStorage` (web).
+- [ ] **Depurar `mejoras.md`** — 9 de 12 ítems ya implementados en código actual (poda, visibilitychange, CORS, rate limit auth, paginación...); pasar por skill `mejoras-triage`.
+
 ## Backlog / ideas 💡
 
 _Sin comprometer ni ordenar del todo. Ideas que respetan la constitución._

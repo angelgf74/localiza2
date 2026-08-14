@@ -21,6 +21,9 @@ public class AuthController(AppDbContext db, EmailService emailService, TokenSer
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Password) || dto.Password.Length < 8)
+            return BadRequest(new { message = "La contraseña debe tener al menos 8 caracteres." });
+
         if (await db.Users.AnyAsync(u => u.Email == dto.Email.ToLower()))
             return Conflict(new { message = "El correo ya está registrado." });
 
