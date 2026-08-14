@@ -142,7 +142,7 @@ public class AuthController(AppDbContext db, EmailService emailService, TokenSer
         if (user is null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Unauthorized(new { message = "Credenciales incorrectas." });
 
-        var token = tokenService.GenerateJwt(user.Id, user.Email, user.Role);
+        var token = tokenService.GenerateJwt(user.Id, user.Email, user.Role, user.TokenVersion);
         return Ok(new LoginResponseDto(token, user.Id, user.Name, user.Email, user.Role.ToString()));
     }
 
@@ -215,6 +215,7 @@ public class AuthController(AppDbContext db, EmailService emailService, TokenSer
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
         user.PasswordResetToken = null;
         user.PasswordResetExpiry = null;
+        user.TokenVersion++; // Invalida cualquier JWT emitido antes del cambio de contraseña.
         await db.SaveChangesAsync();
 
         return Ok(new { message = "Contraseña actualizada correctamente. Ya puedes iniciar sesión." });

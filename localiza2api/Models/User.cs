@@ -14,6 +14,10 @@ public class User
     public bool SharingEnabled { get; set; } = true;
     public UserRole Role { get; set; } = UserRole.User;
 
+    // Se incrementa al cambiar la contraseña. Va embebido en el JWT (claim "tv"):
+    // un token emitido con una versión antigua deja de ser válido aunque no haya expirado.
+    public int TokenVersion { get; set; }
+
     public ICollection<Contact> Contacts { get; set; } = [];
     public ICollection<UserLocation> Locations { get; set; } = [];
 }

@@ -34,7 +34,13 @@ public static class SuperAdminSeeder
         }
         else
         {
-            admin.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+            // Solo re-hashear (e invalidar tokens ya emitidos) si la contraseña configurada
+            // cambió de verdad; si no, cada arranque del servidor cerraría la sesión admin.
+            if (!BCrypt.Net.BCrypt.Verify(password, admin.PasswordHash))
+            {
+                admin.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+                admin.TokenVersion++;
+            }
             admin.Role = UserRole.SuperAdmin;
         }
         await db.SaveChangesAsync();

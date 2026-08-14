@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using localiza2api.Data;
@@ -29,6 +30,31 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        };
+        // El claim "tv" fija la versión de contraseña con la que se emitió el token.
+        // Si no coincide con la versión actual del usuario (cambio de contraseña de por medio),
+        // el token se rechaza aunque su firma y expiración sigan siendo válidas.
+        opt.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var userIdClaim = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+                var tvClaim = context.Principal?.FindFirstValue("tv");
+                if (userIdClaim is null || tvClaim is null || !int.TryParse(userIdClaim, out var userId))
+                {
+                    context.Fail("Token inválido.");
+                    return;
+                }
+
+                var db = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+                var currentVersion = await db.Users
+                    .Where(u => u.Id == userId)
+                    .Select(u => (int?)u.TokenVersion)
+                    .FirstOrDefaultAsync();
+
+                if (currentVersion is null || currentVersion.ToString() != tvClaim)
+                    context.Fail("Token revocado.");
+            }
         };
     });
 

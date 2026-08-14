@@ -30,9 +30,12 @@ public static class DemoSeeder
             demo = new User { Email = email, Name = "Demo", PasswordHash = BCrypt.Net.BCrypt.HashPassword(password) };
             db.Users.Add(demo);
         }
-        else
+        else if (!BCrypt.Net.BCrypt.Verify(password, demo.PasswordHash))
         {
+            // Solo re-hashear (e invalidar tokens ya emitidos) si la contraseña configurada
+            // cambió de verdad; si no, cada arranque del servidor cerraría la sesión demo.
             demo.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
+            demo.TokenVersion++;
         }
         await db.SaveChangesAsync();
 

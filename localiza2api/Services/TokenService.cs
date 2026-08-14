@@ -8,7 +8,7 @@ namespace localiza2api.Services;
 
 public class TokenService(IConfiguration config)
 {
-    public string GenerateJwt(int userId, string email, UserRole role)
+    public string GenerateJwt(int userId, string email, UserRole role, int tokenVersion)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -16,7 +16,8 @@ public class TokenService(IConfiguration config)
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
             new Claim(ClaimTypes.Email, email),
-            new Claim(ClaimTypes.Role, role.ToString())
+            new Claim(ClaimTypes.Role, role.ToString()),
+            new Claim("tv", tokenVersion.ToString())
         };
         var token = new JwtSecurityToken(
             issuer: config["Jwt:Issuer"],
