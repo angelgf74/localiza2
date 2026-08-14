@@ -67,7 +67,7 @@ Web Dashboard (HTML/JS)
 - >30 days: purged
 
 ### Authentication
-JWT tokens are issued on login and sent in the `Authorization: Bearer` header. Tokens are NOT stored in the database—only client-side (Android DataStore / web localStorage).
+JWT tokens are issued on login and sent in the `Authorization: Bearer` header. The raw token is NOT stored in the database—only client-side (Android `EncryptedSharedPreferences` / web `sessionStorage`). The database does store `User.TokenVersion`, embedded in the JWT as the `tv` claim: changing a password increments it, which revokes every token issued before the change even if it hasn't expired yet.
 
 ### Contact Pairing
 Contacts pair via email invite or QR code. QR pairing tokens expire in 15 minutes. Both users must confirm to establish a mutual contact relationship before locations are shared.
