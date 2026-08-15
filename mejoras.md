@@ -2,8 +2,10 @@
 
 ## UX / Funcionalidad
 
-**5. JWT con refresh token**
-El token dura 30 días (no 24h como decía este ítem originalmente) y el usuario queda desconectado sin aviso al expirar. Ya se resolvió la mitad del problema — revocación tras cambio de contraseña vía `User.TokenVersion` (claim `tv`, ver `spec/constitution/roadmap.md`) — pero sigue sin existir un refresh token de larga duración con renovación silenciosa, que es el patrón estándar para apps móviles.
+**5. JWT con refresh token — backend hecho, clientes pendientes** (API 2026-08-14)
+Backend completo: entidad `RefreshToken` (hash SHA-256, nunca se guarda en claro), rotación en cada uso, detección de reuso (revoca toda la familia si un token ya rotado se vuelve a presentar — señal de robo), endpoints `POST /api/auth/refresh` y `POST /api/auth/logout`, y `ResetPassword` revoca todos los refresh tokens activos del usuario. Tests en `AuthControllerRefreshTests`.
+
+El JWT de acceso se ha dejado **sin tocar a propósito** (sigue en 30 días) para no romper la app Android en producción, que aún no sabe pedir un refresh. Falta: acortar el JWT (p. ej. 1h) y cablear Android (interceptor OkHttp para refresh automático) y opcionalmente la web — coordinado como un único release, porque acortar el JWT sin que el cliente sepa refrescar sí rompería sesiones.
 
 ---
 

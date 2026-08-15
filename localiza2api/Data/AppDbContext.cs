@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ContactInvitation> ContactInvitations => Set<ContactInvitation>();
     public DbSet<UserLocation> UserLocations => Set<UserLocation>();
     public DbSet<LocationShareLink> LocationShareLinks => Set<LocationShareLink>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -78,6 +79,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.HasOne(l => l.User)
                 .WithMany()
                 .HasForeignKey(l => l.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<RefreshToken>(e =>
+        {
+            e.HasIndex(r => r.TokenHash).IsUnique();
+            e.Property(r => r.TokenHash).HasMaxLength(64);
+            e.Property(r => r.ReplacedByTokenHash).HasMaxLength(64);
+            e.HasIndex(r => new { r.UserId, r.RevokedAt }); // Consulta de "tokens activos de un usuario" en cada refresh/reset.
+            e.HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

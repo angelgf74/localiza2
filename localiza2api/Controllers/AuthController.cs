@@ -143,7 +143,71 @@ public class AuthController(AppDbContext db, EmailService emailService, TokenSer
             return Unauthorized(new { message = "Credenciales incorrectas." });
 
         var token = tokenService.GenerateJwt(user.Id, user.Email, user.Role, user.TokenVersion);
-        return Ok(new LoginResponseDto(token, user.Id, user.Name, user.Email, user.Role.ToString()));
+        var refreshToken = await IssueRefreshTokenAsync(user.Id);
+        return Ok(new LoginResponseDto(token, refreshToken, user.Id, user.Name, user.Email, user.Role.ToString()));
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshRequestDto dto)
+    {
+        var hash = TokenService.HashToken(dto.RefreshToken);
+        var stored = await db.RefreshTokens.Include(r => r.User).FirstOrDefaultAsync(r => r.TokenHash == hash);
+
+        if (stored is null)
+            return Unauthorized(new { message = "Refresh token inválido." });
+
+        if (stored.RevokedAt is not null)
+        {
+            // Un token ya rotado que vuelve a presentarse es señal de robo/copia: se
+            // revoca toda la familia de tokens activos del usuario, no solo este.
+            await db.RefreshTokens
+                .Where(r => r.UserId == stored.UserId && r.RevokedAt == null)
+                .ExecuteUpdateAsync(s => s.SetProperty(r => r.RevokedAt, DateTime.UtcNow));
+            return Unauthorized(new { message = "Refresh token revocado." });
+        }
+
+        if (stored.ExpiresAt < DateTime.UtcNow)
+            return Unauthorized(new { message = "Refresh token expirado." });
+
+        var newRefreshToken = TokenService.GenerateRefreshTokenValue();
+        stored.RevokedAt = DateTime.UtcNow;
+        stored.ReplacedByTokenHash = TokenService.HashToken(newRefreshToken);
+        db.RefreshTokens.Add(new RefreshToken
+        {
+            UserId = stored.UserId,
+            TokenHash = stored.ReplacedByTokenHash,
+            ExpiresAt = DateTime.UtcNow.AddDays(60)
+        });
+        await db.SaveChangesAsync();
+
+        var accessToken = tokenService.GenerateJwt(stored.User.Id, stored.User.Email, stored.User.Role, stored.User.TokenVersion);
+        return Ok(new RefreshResponseDto(accessToken, newRefreshToken));
+    }
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout([FromBody] RefreshRequestDto dto)
+    {
+        var hash = TokenService.HashToken(dto.RefreshToken);
+        var stored = await db.RefreshTokens.FirstOrDefaultAsync(r => r.TokenHash == hash);
+        if (stored is not null && stored.RevokedAt is null)
+        {
+            stored.RevokedAt = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+        }
+        return NoContent();
+    }
+
+    private async Task<string> IssueRefreshTokenAsync(int userId)
+    {
+        var raw = TokenService.GenerateRefreshTokenValue();
+        db.RefreshTokens.Add(new RefreshToken
+        {
+            UserId = userId,
+            TokenHash = TokenService.HashToken(raw),
+            ExpiresAt = DateTime.UtcNow.AddDays(60)
+        });
+        await db.SaveChangesAsync();
+        return raw;
     }
 
     [HttpPost("resend-confirmation")]
@@ -216,6 +280,9 @@ public class AuthController(AppDbContext db, EmailService emailService, TokenSer
         user.PasswordResetToken = null;
         user.PasswordResetExpiry = null;
         user.TokenVersion++; // Invalida cualquier JWT emitido antes del cambio de contraseña.
+        await db.RefreshTokens
+            .Where(r => r.UserId == user.Id && r.RevokedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(r => r.RevokedAt, DateTime.UtcNow));
         await db.SaveChangesAsync();
 
         return Ok(new { message = "Contraseña actualizada correctamente. Ya puedes iniciar sesión." });

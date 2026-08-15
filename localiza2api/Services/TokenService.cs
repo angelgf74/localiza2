@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using localiza2api.Models;
 using Microsoft.IdentityModel.Tokens;
@@ -31,4 +32,14 @@ public class TokenService(IConfiguration config)
     public static string GenerateSecureToken() =>
         Convert.ToBase64String(Guid.NewGuid().ToByteArray())
             .Replace("+", "-").Replace("/", "_").Replace("=", "");
+
+    // Mayor entropía que GenerateSecureToken (256 bits vs 128): el refresh token vive
+    // hasta 60 días, más que ningún otro token del sistema.
+    public static string GenerateRefreshTokenValue() =>
+        Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
+            .Replace('+', '-').Replace('/', '_').TrimEnd('=');
+
+    // Solo se guarda el hash en BD; el valor en claro no se recupera nunca del servidor.
+    public static string HashToken(string token) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 }
