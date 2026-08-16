@@ -195,7 +195,8 @@ NGINXEOF
 # ─────────────────────────────────────────────────────────────────────────
 else
   echo "[3/4] Reiniciando servicio $SERVICE_NAME..."
-  ssh "$SSH_HOST" "systemctl --user start '${SERVICE_NAME}'"
+  # "start" es no-op si el servicio ya está activo — no recarga el binario nuevo.
+  ssh "$SSH_HOST" "systemctl --user restart '${SERVICE_NAME}'"
   echo "      Servicio reiniciado."
 fi
 
