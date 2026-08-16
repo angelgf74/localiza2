@@ -8,11 +8,20 @@ public class PruneLocationsService(IServiceScopeFactory scopeFactory, ILogger<Pr
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            await PruneAsync(stoppingToken);
-            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                await PruneAsync(stoppingToken);
+                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancelación esperada al parar el servicio (SIGINT de systemd). Sin este
+            // catch, Task.Delay lanza sin controlar y .NET aborta todo el proceso con
+            // SIGABRT en vez de apagarse limpio — eso disparaba el crash-loop en producción.
         }
     }
 
