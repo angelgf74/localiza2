@@ -15,6 +15,9 @@ interface ApiService {
     @POST("api/auth/login")
     suspend fun login(@Body dto: LoginDto): Response<LoginResponse>
 
+    @POST("api/auth/logout")
+    suspend fun logout(@Body dto: RefreshRequestDto): Response<Unit>
+
     @GET("api/contacts")
     suspend fun getContacts(): Response<List<ContactDto>>
 

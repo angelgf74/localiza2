@@ -33,11 +33,16 @@ async function apiPost(path, body, authToken) {
 }
 
 function getSession() {
-  return { token: sessionStorage.getItem('lz2_token'), name: sessionStorage.getItem('lz2_name') };
+  return {
+    token:        sessionStorage.getItem('lz2_token'),
+    refreshToken: sessionStorage.getItem('lz2_refresh'),
+    name:         sessionStorage.getItem('lz2_name')
+  };
 }
 
-function saveSession(token, name) {
+function saveSession(token, refreshToken, name) {
   sessionStorage.setItem('lz2_token', token);
+  sessionStorage.setItem('lz2_refresh', refreshToken);
   sessionStorage.setItem('lz2_name', name);
 }
 
@@ -101,7 +106,7 @@ function renderLogin(inviterName) {
       const email = document.getElementById('f-email').value.trim();
       const pass  = document.getElementById('f-password').value;
       const data = await apiPost('/api/auth/login', { email, password: pass });
-      saveSession(data.token, data.name || data.email);
+      saveSession(data.token, data.refreshToken, data.name || data.email);
       if (inviterName) {
         await tryAccept(data.token, inviterName);
       } else {

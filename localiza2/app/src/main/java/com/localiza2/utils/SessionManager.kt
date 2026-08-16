@@ -18,16 +18,26 @@ class SessionManager(context: Context) {
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
-    fun saveSession(token: String, userId: Int, name: String, email: String) {
+    fun saveSession(token: String, refreshToken: String, userId: Int, name: String, email: String) {
         prefs.edit()
             .putString(KEY_TOKEN, token)
+            .putString(KEY_REFRESH_TOKEN, refreshToken)
             .putInt(KEY_USER_ID, userId)
             .putString(KEY_NAME, name)
             .putString(KEY_EMAIL, email)
             .apply()
     }
 
+    // Usado por TokenAuthenticator tras un refresco: no toca userId/name/email.
+    fun updateTokens(token: String, refreshToken: String) {
+        prefs.edit()
+            .putString(KEY_TOKEN, token)
+            .putString(KEY_REFRESH_TOKEN, refreshToken)
+            .apply()
+    }
+
     fun getToken(): String? = prefs.getString(KEY_TOKEN, null)
+    fun getRefreshToken(): String? = prefs.getString(KEY_REFRESH_TOKEN, null)
     fun getUserId(): Int = prefs.getInt(KEY_USER_ID, -1)
     fun getName(): String? = prefs.getString(KEY_NAME, null)
     fun getEmail(): String? = prefs.getString(KEY_EMAIL, null)
@@ -37,6 +47,7 @@ class SessionManager(context: Context) {
 
     companion object {
         private const val KEY_TOKEN = "token"
+        private const val KEY_REFRESH_TOKEN = "refresh_token"
         private const val KEY_USER_ID = "user_id"
         private const val KEY_NAME = "name"
         private const val KEY_EMAIL = "email"

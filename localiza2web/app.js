@@ -18,6 +18,7 @@ const USER_COLOR = '#3b82f6';
 // ─── Estado ──────────────────────────────────────────────────────────────────
 const state = {
   token:          sessionStorage.getItem('lz2_token'),
+  refreshToken:   sessionStorage.getItem('lz2_refresh'),
   userName:       sessionStorage.getItem('lz2_name'),
   contacts:       [],     // ContactDto[]
   locations:      {},     // contactId → ContactLocationDto
@@ -47,14 +48,50 @@ let qrCountdownTimer = null;
 // API
 // ════════════════════════════════════════════════════════════════════════════
 
-async function apiFetch(path, options = {}) {
+// Refresco en curso compartido entre llamadas concurrentes: el refresh token rota de un
+// solo uso, así que dos 401 simultáneos no deben disparar dos refrescos (el segundo
+// invalidaría el token que acaba de emitir el primero).
+let refreshInFlight = null;
+
+async function tryRefreshToken() {
+  if (!state.refreshToken) return false;
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken: state.refreshToken })
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        state.token        = data.token;
+        state.refreshToken = data.refreshToken;
+        sessionStorage.setItem('lz2_token',   data.token);
+        sessionStorage.setItem('lz2_refresh', data.refreshToken);
+        return true;
+      } catch {
+        return false;
+      } finally {
+        refreshInFlight = null;
+      }
+    })();
+  }
+  return refreshInFlight;
+}
+
+async function apiFetch(path, options = {}, _retried = false) {
   const headers = { 'Content-Type': 'application/json' };
   if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
   Object.assign(headers, options.headers || {});
 
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
 
-  if (res.status === 401) { doLogout(); throw new Error('Sesión expirada'); }
+  if (res.status === 401) {
+    if (!_retried && await tryRefreshToken()) return apiFetch(path, options, true);
+    doLogout();
+    throw new Error('Sesión expirada');
+  }
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(text || `Error ${res.status}`);
@@ -119,11 +156,13 @@ async function doLogin(email, password) {
 
   try {
     const data = await apiLogin(email, password);
-    state.token    = data.token;
-    state.userName = data.name || data.email;
-    sessionStorage.setItem('lz2_token', data.token);
-    sessionStorage.setItem('lz2_name',  state.userName);
-    sessionStorage.setItem('lz2_role',  data.role || 'User');
+    state.token        = data.token;
+    state.refreshToken = data.refreshToken;
+    state.userName     = data.name || data.email;
+    sessionStorage.setItem('lz2_token',   data.token);
+    sessionStorage.setItem('lz2_refresh', data.refreshToken);
+    sessionStorage.setItem('lz2_name',    state.userName);
+    sessionStorage.setItem('lz2_role',    data.role || 'User');
     if (data.role === 'SuperAdmin') {
       window.location.href = 'admin.html';
       return;
@@ -219,9 +258,18 @@ function updateSharingButton() {
 }
 
 function doLogout() {
-  Object.assign(state, { token: null, userName: null, contacts: [], locations: {},
+  if (state.refreshToken) {
+    // Best-effort: revoca el refresh token en el servidor. No bloquea el logout local.
+    fetch(`${API_BASE}/api/auth/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: state.refreshToken })
+    }).catch(() => {});
+  }
+  Object.assign(state, { token: null, refreshToken: null, userName: null, contacts: [], locations: {},
                           userPos: null, selectedId: null, sharingEnabled: true });
   sessionStorage.removeItem('lz2_token');
+  sessionStorage.removeItem('lz2_refresh');
   sessionStorage.removeItem('lz2_name');
   sessionStorage.removeItem('lz2_role');
   stopAutoRefresh();

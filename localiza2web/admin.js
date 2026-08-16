@@ -14,6 +14,7 @@ const CONTACT_COLORS = [
 // ─── Estado ──────────────────────────────────────────────────────────────────
 const state = {
   token:          sessionStorage.getItem('lz2_token'),
+  refreshToken:   sessionStorage.getItem('lz2_refresh'),
   role:           sessionStorage.getItem('lz2_role'),
   userName:       sessionStorage.getItem('lz2_name'),
   users:          [],     // AdminUserDto[]
@@ -36,14 +37,51 @@ let historyLayer = null;
 // API
 // ════════════════════════════════════════════════════════════════════════════
 
-async function apiFetch(path, options = {}) {
+// Refresco en curso compartido entre llamadas concurrentes: el refresh token rota de un
+// solo uso, así que dos 401 simultáneos no deben disparar dos refrescos.
+let refreshInFlight = null;
+
+async function tryRefreshToken() {
+  if (!state.refreshToken) return false;
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken: state.refreshToken })
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        state.token        = data.token;
+        state.refreshToken = data.refreshToken;
+        sessionStorage.setItem('lz2_token',   data.token);
+        sessionStorage.setItem('lz2_refresh', data.refreshToken);
+        return true;
+      } catch {
+        return false;
+      } finally {
+        refreshInFlight = null;
+      }
+    })();
+  }
+  return refreshInFlight;
+}
+
+async function apiFetch(path, options = {}, _retried = false) {
   const headers = { 'Content-Type': 'application/json' };
   if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
   Object.assign(headers, options.headers || {});
 
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
 
-  if (res.status === 401 || res.status === 403) { doLogout(); throw new Error('Sesión expirada'); }
+  if (res.status === 401) {
+    // 403 (rol insuficiente) no se reintenta: refrescar no cambia el rol del token.
+    if (!_retried && await tryRefreshToken()) return apiFetch(path, options, true);
+    doLogout();
+    throw new Error('Sesión expirada');
+  }
+  if (res.status === 403) { doLogout(); throw new Error('Sesión expirada'); }
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(text || `Error ${res.status}`);
@@ -60,7 +98,15 @@ const apiGetUserHistory = (userId, limit = 100, before = null) => {
 };
 
 function doLogout() {
+  if (state.refreshToken) {
+    fetch(`${API_BASE}/api/auth/logout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: state.refreshToken })
+    }).catch(() => {});
+  }
   sessionStorage.removeItem('lz2_token');
+  sessionStorage.removeItem('lz2_refresh');
   sessionStorage.removeItem('lz2_name');
   sessionStorage.removeItem('lz2_role');
   window.location.href = 'index.html';

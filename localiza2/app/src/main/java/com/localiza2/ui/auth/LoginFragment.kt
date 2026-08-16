@@ -59,7 +59,7 @@ class LoginFragment : Fragment() {
         lifecycleScope.launch {
             viewModel.loginResult.collect { result ->
                 result ?: return@collect
-                sessionManager.saveSession(result.token, result.userId, result.name, result.email)
+                sessionManager.saveSession(result.token, result.refreshToken, result.userId, result.name, result.email)
                 startActivity(Intent(requireContext(), MainActivity::class.java))
                 requireActivity().finish()
             }

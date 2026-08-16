@@ -3,8 +3,11 @@ package com.localiza2.models
 data class RegisterDto(val email: String, val password: String, val name: String)
 data class LoginDto(val email: String, val password: String)
 data class ForgotPasswordDto(val email: String)
-data class LoginResponse(val token: String, val userId: Int, val name: String, val email: String)
+data class LoginResponse(val token: String, val refreshToken: String, val userId: Int, val name: String, val email: String)
 data class MessageResponse(val message: String)
+
+data class RefreshRequestDto(val refreshToken: String)
+data class RefreshResponse(val token: String, val refreshToken: String)
 
 data class InviteContactDto(val email: String, val alias: String)
 data class UpdateContactDto(val alias: String, val photoUrl: String?)

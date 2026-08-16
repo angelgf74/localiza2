@@ -17,7 +17,7 @@ sealed class AuthState {
     data class Error(val message: String) : AuthState()
 }
 
-data class LoginSuccess(val token: String, val userId: Int, val name: String, val email: String)
+data class LoginSuccess(val token: String, val refreshToken: String, val userId: Int, val name: String, val email: String)
 
 class AuthViewModel(private val api: ApiService) : ViewModel() {
 
@@ -58,7 +58,7 @@ class AuthViewModel(private val api: ApiService) : ViewModel() {
             }.onSuccess { response ->
                 if (response.isSuccessful) {
                     val body = response.body()!!
-                    _loginResult.value = LoginSuccess(body.token, body.userId, body.name, body.email)
+                    _loginResult.value = LoginSuccess(body.token, body.refreshToken, body.userId, body.name, body.email)
                     _authState.value = AuthState.Success("Bienvenido")
                 } else if (response.code() == 401) {
                     _authState.value = AuthState.Error("Credenciales incorrectas")

@@ -24,6 +24,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.localiza2.api.RetrofitClient
 import com.localiza2.databinding.ActivityMainBinding
 import com.localiza2.models.CreateShareLinkDto
+import com.localiza2.models.RefreshRequestDto
 import com.localiza2.models.SetSharingDto
 import com.localiza2.services.LocationService
 import com.localiza2.ui.auth.AuthActivity
@@ -283,10 +284,19 @@ class MainActivity : AppCompatActivity() {
             .setMessage("¿Seguro que quieres cerrar sesión?")
             .setPositiveButton("Cerrar sesión") { _, _ ->
                 stopService(Intent(this, LocationService::class.java))
+                val refreshToken = sessionManager.getRefreshToken()
                 sessionManager.clearSession()
                 startActivity(Intent(this, AuthActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 })
+                if (refreshToken != null) {
+                    // Best-effort: revoca el refresh token en el servidor tras salir de la pantalla.
+                    lifecycleScope.launch {
+                        try {
+                            RetrofitClient.create(sessionManager).logout(RefreshRequestDto(refreshToken))
+                        } catch (e: Exception) { /* sesión local ya cerrada; ignorar */ }
+                    }
+                }
             }
             .setNegativeButton("Cancelar", null)
             .show()
